@@ -23,7 +23,7 @@ class Compute(object):
         for region,response in page_result:
             if response.addresses:
                 for address in response.addresses:
-                    if address.status == 'RESERVED':
+                    if address.status == 'RESERVED' and address.address_type == 'EXTERNAL':
                         result.append(address.address)
         return result
 
@@ -61,4 +61,4 @@ class Compute(object):
         return result
 
 # aa = Compute('speedy-victory-336109')
-# aa.list_region()                
+# aa.list_idle_ips()
