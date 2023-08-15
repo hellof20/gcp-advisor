@@ -17,7 +17,7 @@ def main(projects):
     for project in project_list:
         resouce = ResourceManager(project)
         project_name = resouce.get_project_name()
-        csv_name = '%s_check_result.csv' % project_name
+        csv_name = 'check_result.csv'
         if os.path.exists(csv_name):
             os.remove(csv_name)
         write_csv_header(csv_name)
