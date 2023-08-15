@@ -51,5 +51,14 @@ class Compute(object):
                         result.append(disk.name)
         return result
 
-# aa = Compute('speedy-victory-336109')   
-# aa. list_idle_disks()                
+    def list_region(self):
+        result = []
+        client = compute_v1.RegionsClient()
+        request = compute_v1.ListRegionsRequest(project=self.project)
+        page_result = client.list(request=request)
+        for response in page_result:
+            result.append(response.name)
+        return result
+
+# aa = Compute('speedy-victory-336109')
+# aa.list_region()                

@@ -2,3 +2,4 @@ click==8.1.6
 google-cloud-compute==1.14.0
 google-cloud-resource-manager==1.10.3
 google-cloud-monitoring==2.15.1
+google-cloud-redis==2.13.1
