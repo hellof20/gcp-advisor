@@ -15,6 +15,7 @@ pip install -r requirements.txt
 
 make sure you have permission to do this
 ```
+chmod +x bin/gcp-advisor
 ./bin/gcp-advisor --projects project_1_id,project_2_id
 ```
 2. check result
