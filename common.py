@@ -13,11 +13,12 @@ def write_csv(csv_name, project_name, result, pillar_name, product_name, check_n
     dict = {}
     with open(csv_name, 'a') as f:
         writer_object = DictWriter(f, fieldnames=field_names)
-        for i in result:
-            dict['project_name'] = project_name
-            dict['pillar_name'] = pillar_name
-            dict['product_name'] = product_name
-            dict['check_name'] = check_name
-            dict['result'] = i
-            writer_object.writerow(dict)
+        if result:
+            for i in result:
+                dict['project_name'] = project_name
+                dict['pillar_name'] = pillar_name
+                dict['product_name'] = product_name
+                dict['check_name'] = check_name
+                dict['result'] = i
+                writer_object.writerow(dict)
         f.close()
