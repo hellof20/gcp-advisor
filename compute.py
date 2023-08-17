@@ -13,10 +13,27 @@ class Compute(object):
             for zone, response in agg_list:
                 if response.instances:
                     for instance in response.instances:
-                        result.append(instance.name)
+                        print(instance)
+                        result.append(instance)
             return result
         except:
             pass
+
+
+    def list_all_instances_zones(self):
+        try:
+            result = []
+            instance_client = compute_v1.InstancesClient()
+            request = {"project" : self.project}
+            agg_list = instance_client.aggregated_list(request=request)
+            for zone, response in agg_list:
+                if response.instances:
+                    for instance in response.instances:
+                        result.append(zone.split('/')[-1])
+            return result
+        except:
+            pass            
+
 
     def list_idle_ips(self):
         try:
@@ -33,20 +50,6 @@ class Compute(object):
         except:
             pass
 
-    def list_idle_disks(self):
-        try:
-            result = []
-            address_client = compute_v1.AddressesClient()
-            request = compute_v1.AggregatedListAddressesRequest(project=self.project)
-            page_result = address_client.aggregated_list(request=request)
-            for region,response in page_result:
-                if response.addresses:
-                    for address in response.addresses:
-                        if address.status == 'RESERVED':
-                            result.append(address.address)
-            return result
-        except:
-            pass        
 
     def list_idle_disks(self):
         try:
@@ -63,7 +66,8 @@ class Compute(object):
         except:
             pass        
 
-    def list_region(self):
+
+    def list_all_regions(self):
         try:
             result = []
             client = compute_v1.RegionsClient()
@@ -73,7 +77,15 @@ class Compute(object):
                 result.append(response.name)
             return result
         except:
-            pass            
+            pass     
 
-# aa = Compute('speedy-victory-336109')
-# aa.list_idle_ips()
+
+    def list_vm_zone(self):
+        try:
+            result = []
+            print(self.list_all_instances_zones())
+        except:
+            pass    
+
+# aa = Compute('pangu-358004')
+# print(aa.list_all_instances())

@@ -5,6 +5,7 @@ from common import write_csv,write_csv_header
 from compute import Compute
 from monitoring import Monitor
 from resourcemanager import ResourceManager
+from recommender import Recommender
 from redis import Redis
 from gke import GKE
 from sql import SQL
@@ -29,6 +30,7 @@ def main(projects):
         redis = Redis(project)
         gke = GKE(project)
         sql = SQL(project)
+        recommender = Recommender(project)
         write_csv(csv_name, project_name, compute.list_idle_ips(), pillar_name = '成本', product_name = 'VPC', check_name = '检查是否有未挂载的空闲外网IP')
         write_csv(csv_name, project_name, compute.list_idle_disks(), pillar_name = '成本', product_name = '磁盘', check_name = '检查是否有未挂载的磁盘')
         write_csv(csv_name, project_name, monitor.quota_usage(), pillar_name = '安全', product_name = '配额', check_name = '检查当前配额是否有高于70%的情况')        
@@ -43,6 +45,7 @@ def main(projects):
         write_csv(csv_name, project_name, sql.check_sql_delete_protect(), pillar_name = '安全', product_name = 'SQL', check_name = '检查SQL实例是否启用删除保护')        
         write_csv(csv_name, project_name, sql.check_sql_public_access(), pillar_name = '安全', product_name = 'SQL', check_name = '检查SQL实例是否开放了公网访问')        
         write_csv(csv_name, project_name, sql.check_sql_query_insight(), pillar_name = '安全', product_name = 'SQL', check_name = '检查SQL实例是否启用了Query Insight')        
-
+        write_csv(csv_name, project_name, recommender.recommender_idle_vm(), pillar_name = '成本', product_name = 'VM', check_name = '检查空闲VM')        
+        write_csv(csv_name, project_name, recommender.recommender_idle_sql(), pillar_name = '成本', product_name = 'SQL', check_name = '检查空闲SQL实例')        
 if __name__ == '__main__':
     main()

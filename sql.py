@@ -13,7 +13,7 @@ class SQL(object):
             resp = req.execute()
             return resp['items']
         except:
-            pass           
+            pass
 
 
     def check_sql_maintenance(self):
@@ -74,4 +74,6 @@ class SQL(object):
             pass
 
 # aa = SQL('pangu-358004')   
-# print(aa.check_sql_public_access())
+# instances = aa.list_sql_instances()
+# for instance in instances:
+#     print(instance['region'])
