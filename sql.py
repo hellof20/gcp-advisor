@@ -66,14 +66,18 @@ class SQL(object):
         try:
             result = []
             for instance in self.instances:
-                for x in instance['ipAddresses']:
-                    if x['type'] == 'PRIMARY':
+                for net in instance['settings']['ipConfiguration']['authorizedNetworks']:
+                    if net['value'] == '0.0.0.0/0':
                         result.append(instance['name'])
+                # for x in instance['ipAddresses']:
+                #     if x['type'] == 'PRIMARY':
+                #         result.append(instance['name'])
             return result
         except:
             pass
 
 # aa = SQL('pangu-358004')   
-# instances = aa.list_sql_instances()
+# instances = aa.check_sql_public_access()
+# print(instances)
 # for instance in instances:
 #     print(instance['region'])

@@ -80,12 +80,28 @@ class Compute(object):
             pass     
 
 
-    def list_vm_zone(self):
+    # def list_vm_zone(self):
+    #     try:
+    #         result = []
+    #         print(self.list_all_instances_zones())
+    #     except:
+    #         pass
+
+
+    def list_no_snapshots_project(self):
         try:
             result = []
-            print(self.list_all_instances_zones())
+            client = compute_v1.SnapshotsClient()
+            request = compute_v1.ListSnapshotsRequest(project=self.project)
+            page_result = client.list(request=request)
+            for response in page_result:
+                result.append(response.name)
+            if len(result) == 0:
+                return [self.project]
+            else:
+                pass
         except:
-            pass    
+            pass
 
 # aa = Compute('pangu-358004')
-# print(aa.list_all_instances())
+# print(aa.list_no_snapshots_project())
