@@ -48,6 +48,7 @@ def main(projects):
         write_csv(csv_name, project_name, sql.check_sql_delete_protect(), pillar_name = '安全', product_name = 'SQL', check_name = '检查SQL实例是否启用删除保护')        
         write_csv(csv_name, project_name, sql.check_sql_public_access(), pillar_name = '安全', product_name = 'SQL', check_name = '检查SQL实例是否允许0.0.0.0访问')        
         write_csv(csv_name, project_name, sql.check_sql_query_insight(), pillar_name = '安全', product_name = 'SQL', check_name = '检查SQL实例是否启用了Query Insight')        
+        write_csv(csv_name, project_name, sql.check_sql_storage_auto_resize(), pillar_name = '可靠性', product_name = 'SQL', check_name = '检查SQL实例是否启用磁盘自动增长')
         write_csv(csv_name, project_name, recommender.recommender_idle_vm(), pillar_name = '成本', product_name = 'VM', check_name = '检查空闲VM')        
         write_csv(csv_name, project_name, recommender.recommender_idle_sql(), pillar_name = '成本', product_name = 'SQL', check_name = '检查空闲SQL实例')
         write_csv(csv_name, project_name, contacts.list_essential_contacts(), pillar_name = '安全', product_name = 'IAM', check_name = '检查是否配置了重要联系人')

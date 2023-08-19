@@ -76,8 +76,19 @@ class SQL(object):
         except:
             pass
 
+
+    def check_sql_storage_auto_resize(self):
+        try:
+            result = []
+            for instance in self.instances:
+                if instance['settings']['storageAutoResize'] != True:
+                    result.append(instance['name'])
+            return result
+        except:
+            pass            
+
 # aa = SQL('pangu-358004')   
-# instances = aa.check_sql_public_access()
+# instances = aa.check_sql_storage_auto_resize()
 # print(instances)
 # for instance in instances:
 #     print(instance['region'])

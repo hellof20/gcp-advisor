@@ -103,5 +103,14 @@ class Compute(object):
         except:
             pass
 
+    # def list_router(self):
+    #     client = compute_v1.RoutersClient()
+    #     request = compute_v1.ListRoutersRequest(
+    #         project=self.project
+    #         )
+    #     page_result = client.list(request=request)
+    #     for response in page_result:
+    #         print(response)        
+
 # aa = Compute('pangu-358004')
-# print(aa.list_no_snapshots_project())
+# print(aa.list_router())

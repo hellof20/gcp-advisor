@@ -7,3 +7,4 @@ google-cloud-container==2.29.0
 google-api-python-client==2.97.0
 google-cloud-recommender==2.11.2
 google-cloud-essential-contacts==1.5.3
+google-cloud-storage==2.10.0
