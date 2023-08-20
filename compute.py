@@ -1,8 +1,10 @@
 from google.cloud import compute_v1
+from resourcemanager import ResourceManager
 
 class Compute(object):
     def __init__(self, project):
         self.project = project
+        self.all_instances = self.list_all_instances()
 
     def list_all_instances(self):
         try:
@@ -13,7 +15,6 @@ class Compute(object):
             for zone, response in agg_list:
                 if response.instances:
                     for instance in response.instances:
-                        print(instance)
                         result.append(instance)
             return result
         except:
@@ -28,11 +29,10 @@ class Compute(object):
             agg_list = instance_client.aggregated_list(request=request)
             for zone, response in agg_list:
                 if response.instances:
-                    for instance in response.instances:
                         result.append(zone.split('/')[-1])
             return result
         except:
-            pass            
+            pass        
 
 
     def list_idle_ips(self):
@@ -77,15 +77,7 @@ class Compute(object):
                 result.append(response.name)
             return result
         except:
-            pass     
-
-
-    # def list_vm_zone(self):
-    #     try:
-    #         result = []
-    #         print(self.list_all_instances_zones())
-    #     except:
-    #         pass
+            pass
 
 
     def list_no_snapshots_project(self):
@@ -103,6 +95,23 @@ class Compute(object):
         except:
             pass
 
+
+    def list_no_deletion_protection(self):
+        result = []
+        result_num = 0
+        resourcemanager = ResourceManager(self.project)
+        project_name = resourcemanager.get_project_name()
+        all_instances = self.all_instances
+        for instance in all_instances:
+            if instance.deletion_protection == False:
+                result_num += 1
+        if result_num > 0:
+            result.append({project_name:result_num})
+            return result
+        else:
+            pass
+
+
     # def list_router(self):
     #     client = compute_v1.RoutersClient()
     #     request = compute_v1.ListRoutersRequest(
@@ -112,5 +121,5 @@ class Compute(object):
     #     for response in page_result:
     #         print(response)        
 
-# aa = Compute('pangu-358004')
-# print(aa.list_router())
+# aa = Compute('speedy-victory-336109')
+# print(aa.list_no_deletion_protection())
