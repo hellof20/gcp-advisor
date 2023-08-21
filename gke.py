@@ -45,5 +45,15 @@ class GKE(object):
         except:
             pass        
 
+
+    def check_gke_public_cluster(self):       
+        result = []
+        for cluster in self.result.clusters:
+            for pool in cluster.node_pools:
+                if pool.network_config.enable_private_nodes == False:
+                    result.append(cluster.name)
+        result = list(set(result))
+        return result         
+
 # gke = GKE('speedy-victory-336109')
-# print(gke.list_clusters())
+# print(gke.check_gke_public_cluster())

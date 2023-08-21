@@ -61,7 +61,7 @@ class Compute(object):
                 if response.disks:
                     for disk in response.disks:
                         if not disk.users:
-                            result.append(disk.name)
+                            result.append({disk.name:disk.size_gb})
             return result
         except:
             pass        
