@@ -11,7 +11,7 @@ def write_csv(csv_name, project_name, result, pillar_name, product_name, check_n
     field_names = ['project_name','pillar_name', 'product_name','check_name','result']
     dict_list = []
     dict = {}
-    with open(csv_name, 'a') as f:
+    with open(csv_name, 'a', encoding='utf-8') as f:
         writer_object = DictWriter(f, fieldnames=field_names)
         if result:
             for i in result:

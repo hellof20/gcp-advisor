@@ -5,6 +5,7 @@ class Compute(object):
     def __init__(self, project):
         self.project = project
         self.all_instances = self.list_all_instances()
+        self.ips = self.list_ips()
 
     def list_all_instances(self):
         try:
@@ -19,6 +20,21 @@ class Compute(object):
             return result
         except:
             pass
+
+
+    def list_ips(self):
+        try:
+            result = []
+            address_client = compute_v1.AddressesClient()
+            request = compute_v1.AggregatedListAddressesRequest(project=self.project)
+            page_result = address_client.aggregated_list(request=request)
+            for region,response in page_result:
+                if response.addresses:
+                    for address in response.addresses: 
+                        result.append(address)
+            return result
+        except:
+            pass            
 
 
     def list_all_instances_zones(self):
@@ -38,14 +54,9 @@ class Compute(object):
     def list_idle_ips(self):
         try:
             result = []
-            address_client = compute_v1.AddressesClient()
-            request = compute_v1.AggregatedListAddressesRequest(project=self.project)
-            page_result = address_client.aggregated_list(request=request)
-            for region,response in page_result:
-                if response.addresses:
-                    for address in response.addresses:
-                        if address.status == 'RESERVED' and address.address_type == 'EXTERNAL':
-                            result.append(address.address)
+            for address in self.ips:
+                if address.status == 'RESERVED' and address.address_type == 'EXTERNAL':
+                    result.append(address.address)
             return result
         except:
             pass
@@ -112,6 +123,25 @@ class Compute(object):
             pass
 
 
+    def list_ephemeral_ip_vm(self):
+        result = []
+        address_list = []
+        # VPC IP list
+        vm_address_list = []
+        for address in self.ips:
+            address_list.append(address.address)
+        # VM external IP list
+        for instance in self.all_instances:
+            for network in instance.network_interfaces:
+                for i in network.access_configs:
+                    vm_address_list.append(i.nat_i_p)
+        # check if VM external IP in VPC IP list
+        for i in vm_address_list:
+            if (i not in address_list):
+                result.append(i)
+        return result
+
+
     # def list_router(self):
     #     client = compute_v1.RoutersClient()
     #     request = compute_v1.ListRoutersRequest(
@@ -122,4 +152,4 @@ class Compute(object):
     #         print(response)        
 
 # aa = Compute('speedy-victory-336109')
-# print(aa.list_no_deletion_protection())
+# print(aa.list_ephemeral_ip_vm())
