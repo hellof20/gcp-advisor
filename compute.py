@@ -1,11 +1,13 @@
 from google.cloud import compute_v1
 from resourcemanager import ResourceManager
+from datetime import datetime,timedelta, timezone
 
 class Compute(object):
     def __init__(self, project):
         self.project = project
         self.all_instances = self.list_all_instances()
         self.ips = self.list_ips()
+        self.ssl_certificates = self.list_ssl_certificates()
 
     def list_all_instances(self):
         try:
@@ -108,39 +110,91 @@ class Compute(object):
 
 
     def list_no_deletion_protection(self):
-        result = []
-        result_num = 0
-        resourcemanager = ResourceManager(self.project)
-        project_name = resourcemanager.get_project_name()
-        all_instances = self.all_instances
-        for instance in all_instances:
-            if instance.deletion_protection == False:
-                result_num += 1
-        if result_num > 0:
-            result.append({project_name:result_num})
-            return result
-        else:
-            pass
+        try:
+            result = []
+            result_num = 0
+            resourcemanager = ResourceManager(self.project)
+            project_name = resourcemanager.get_project_name()
+            all_instances = self.all_instances
+            for instance in all_instances:
+                if instance.deletion_protection == False:
+                    result_num += 1
+            if result_num > 0:
+                result.append({project_name:result_num})
+                return result
+            else:
+                pass
+        except:
+            pass            
 
 
     def list_ephemeral_ip_vm(self):
-        result = []
-        address_list = []
-        # VPC IP list
-        vm_address_list = []
-        for address in self.ips:
-            address_list.append(address.address)
-        # VM external IP list
-        for instance in self.all_instances:
-            for network in instance.network_interfaces:
-                for i in network.access_configs:
-                    vm_address_list.append(i.nat_i_p)
-        # check if VM external IP in VPC IP list
-        for i in vm_address_list:
-            if (i not in address_list):
-                result.append(i)
-        return result
+        try:
+            result = []
+            address_list = []
+            # VPC IP list
+            vm_address_list = []
+            for address in self.ips:
+                address_list.append(address.address)
+            # VM external IP list
+            for instance in self.all_instances:
+                for network in instance.network_interfaces:
+                    for i in network.access_configs:
+                        vm_address_list.append(i.nat_i_p)
+            # check if VM external IP in VPC IP list
+            for i in vm_address_list:
+                if (i not in address_list):
+                    result.append(i)
+            return result
+        except:
+            pass
 
+           
+    def list_ssl_certificates(self):
+        try:
+            result = []
+            expired_num = 0
+            expiring_soon_num = 0
+            client = compute_v1.SslCertificatesClient()
+            request = compute_v1.ListSslCertificatesRequest(project=self.project,)
+            page_result = client.list(request=request)
+            for response in page_result:
+                result.append(response)
+            return result
+        except:
+            pass                
+
+
+    def list_expired_ssl_certificates(self):
+        try:
+            result = []
+            current_utc = datetime.utcnow().replace(tzinfo=timezone.utc)
+            for response in self.ssl_certificates:
+                expire_time_utc = datetime.strptime(response.expire_time,"%Y-%m-%dT%H:%M:%S.%f%z").replace(tzinfo=timezone.utc)
+                remaining_days = (expire_time_utc - current_utc).days
+                if remaining_days < 0:
+                    result.append(response.name)
+            return result
+        except:
+            pass                
+
+
+    def list_expiring_soon_ssl_certificates(self):
+        try:        
+            result = []
+            current_utc = datetime.utcnow().replace(tzinfo=timezone.utc)
+            for response in self.ssl_certificates:
+                expire_time_utc = datetime.strptime(response.expire_time,"%Y-%m-%dT%H:%M:%S.%f%z").replace(tzinfo=timezone.utc)
+                remaining_days = (expire_time_utc - current_utc).days
+                if remaining_days >= 0 and remaining_days < 30:
+                    result.append({response.name: remaining_days})
+            return result
+        except:
+            pass                
+
+
+# if remaining_days >= 0 and remaining_days < 30:
+#                 expiring_soon_num += 1
 
     # def list_router(self):
     #     client = compute_v1.RoutersClient()
@@ -152,4 +206,4 @@ class Compute(object):
     #         print(response)        
 
 # aa = Compute('speedy-victory-336109')
-# print(aa.list_ephemeral_ip_vm())
+# print(aa.list_expiring_soon_ssl_certificates())

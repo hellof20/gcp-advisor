@@ -47,6 +47,8 @@ def func(csv_name, project):
     write_csv(csv_name, project_name, compute.list_no_snapshots_project(), pillar_name = '安全', product_name = 'Snapshot', check_name = '检查是否有快照')
     write_csv(csv_name, project_name, compute.list_no_deletion_protection(), pillar_name = '安全', product_name = 'VM', check_name = '检查未启用删除保护的VM数量')
     write_csv(csv_name, project_name, compute.list_ephemeral_ip_vm(), pillar_name = '安全', product_name = 'VM', check_name = '检查VM外网IP是否为静态IP')
+    write_csv(csv_name, project_name, compute.list_expiring_soon_ssl_certificates(), pillar_name = '安全', product_name = 'Certificates', check_name = '检查是否有即将过期的证书')
+    write_csv(csv_name, project_name, compute.list_expired_ssl_certificates(), pillar_name = '安全', product_name = 'Certificates', check_name = '检查是否有过期的证书')
     write_csv(csv_name, project_name, monitor.quota_usage(), pillar_name = '安全', product_name = 'Quota', check_name = '检查当前配额是否有高于70%的情况')        
     write_csv(csv_name, project_name, redis.check_redis_maintain_window(), pillar_name = '安全', product_name = 'Redis', check_name = '检查Redis实例是否设置了维护窗口')      
     write_csv(csv_name, project_name, redis.check_redis_ha(), pillar_name = '可靠性', product_name = 'Redis', check_name = '检查Redis实例是否启用高可用')
