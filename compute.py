@@ -120,7 +120,7 @@ class Compute(object):
                 if instance.deletion_protection == False:
                     result_num += 1
             if result_num > 0:
-                result.append({project_name:result_num})
+                result.append(result_num)
                 return result
             else:
                 pass

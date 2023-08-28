@@ -17,9 +17,9 @@ class Contacts(object):
             for response in page_result:
                 result.append(response.email)
             if len(result) == 0:
-                return([project_name])
+                return(['Not Configured'])
         except:
-            pass                    
+            pass
 
 # aa = Contacts('speedy-victory-336109')   
 # print(aa.list_essential_contacts())

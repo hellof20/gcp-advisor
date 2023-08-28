@@ -10,6 +10,7 @@ from redis import Redis
 from gke import GKE
 from sql import SQL
 from contacts import Contacts
+from cloudlogging import Logging
 
 
 @click.command()
@@ -38,6 +39,7 @@ def func(csv_name, project):
     redis = Redis(project)
     gke = GKE(project)
     sql = SQL(project)
+    log = Logging(project)
     recommender = Recommender(project)
     contacts = Contacts(project)
     resouce = ResourceManager(project)
@@ -66,6 +68,7 @@ def func(csv_name, project):
     write_csv(csv_name, project_name, recommender.recommender_idle_vm(), pillar_name = '成本', product_name = 'VM', check_name = '检查空闲VM')        
     write_csv(csv_name, project_name, recommender.recommender_idle_sql(), pillar_name = '成本', product_name = 'SQL', check_name = '检查空闲SQL实例')
     write_csv(csv_name, project_name, contacts.list_essential_contacts(), pillar_name = '安全', product_name = 'IAM', check_name = '检查是否配置了重要联系人')
+    write_csv(csv_name, project_name, log.check_if_analytics_enabled(), pillar_name = '卓越运维', product_name = 'Logging', check_name = '检查是否启用日志分析功能')
         
 if __name__ == '__main__':
     main()
