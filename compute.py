@@ -74,7 +74,7 @@ class Compute(object):
                 if response.disks:
                     for disk in response.disks:
                         if not disk.users:
-                            result.append({disk.name:disk.size_gb})
+                            result.append("%s idle %sGB" % (disk.name, disk.size_gb))
             return result
         except:
             pass        
@@ -102,7 +102,7 @@ class Compute(object):
             for response in page_result:
                 result.append(response.name)
             if len(result) == 0:
-                return [self.project]
+                return ['No Snapshots']
             else:
                 pass
         except:
@@ -173,7 +173,7 @@ class Compute(object):
                 expire_time_utc = datetime.strptime(response.expire_time,"%Y-%m-%dT%H:%M:%S.%f%z").replace(tzinfo=timezone.utc)
                 remaining_days = (expire_time_utc - current_utc).days
                 if remaining_days < 0:
-                    result.append(response.name)
+                    result.append("%s has expired" %s (response.name))
             return result
         except:
             pass                
@@ -187,7 +187,7 @@ class Compute(object):
                 expire_time_utc = datetime.strptime(response.expire_time,"%Y-%m-%dT%H:%M:%S.%f%z").replace(tzinfo=timezone.utc)
                 remaining_days = (expire_time_utc - current_utc).days
                 if remaining_days >= 0 and remaining_days < 30:
-                    result.append({response.name: remaining_days})
+                    result.append("%s is to expire in %s days "%(response.name, remaining_days))
             return result
         except:
             pass                

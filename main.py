@@ -9,6 +9,7 @@ from recommender import Recommender
 from redis import Redis
 from gke import GKE
 from sql import SQL
+from gcs import GCS
 from contacts import Contacts
 from cloudlogging import Logging
 
@@ -69,6 +70,7 @@ def func(csv_name, project):
     write_csv(csv_name, project_name, recommender.recommender_idle_sql(), pillar_name = '成本', product_name = 'SQL', check_name = '检查空闲SQL实例')
     write_csv(csv_name, project_name, contacts.list_essential_contacts(), pillar_name = '安全', product_name = 'IAM', check_name = '检查是否配置了重要联系人')
     write_csv(csv_name, project_name, log.check_if_analytics_enabled(), pillar_name = '卓越运维', product_name = 'Logging', check_name = '检查是否启用日志分析功能')
+    write_csv(csv_name, project_name, gcs.list_public_buckets(), pillar_name = '安全', product_name = 'GCS', check_name = '检查是否有公开访问的存储桶')
         
 if __name__ == '__main__':
     main()

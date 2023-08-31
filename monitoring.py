@@ -3,11 +3,11 @@ from google.cloud import monitoring_v3
 class Monitor(object):
     def __init__(self, project):
         self.project = project
+        self.monitor = monitoring_v3.QueryServiceClient()
 
     def quota_usage(self):
         try:
-            client = monitoring_v3.QueryServiceClient()
-            dict = {}
+            result = []
             threshold = 0.6
             query= '''
             fetch consumer_quota
@@ -21,18 +21,18 @@ class Monitor(object):
                 name="projects/%s" % self.project,
                 query=query,
             )
-            page_result = client.query_time_series(request=request)
+            page_result = self.monitor.query_time_series(request=request)
             for response in page_result:
                 quota_metric = response.label_values[0].string_value
                 location = response.label_values[1].string_value
                 project_id = response.label_values[2].string_value
                 point_data = response.point_data[0].values[0].double_value
-                if point_data>threshold:
-                    dict[quota_metric] = point_data
+                if point_data > threshold:
                     # print("%s %s quota usage is %.2f"  %(project_id, quota_metric, point_data))
-            return list(dict.items())
+                    result.append("%s quota is %.2f"%(quota_metric, point_data*100))
+            return result
         except:
-            pass            
+            pass
 
-# aa = Monitor('speedy-victory-336109')   
+# aa = Monitor('speedy-victory-336109')
 # print(aa.quota_usage())

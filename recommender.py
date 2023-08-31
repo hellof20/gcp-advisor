@@ -20,7 +20,8 @@ class Recommender(object):
                 request = recommender_v1.ListRecommendationsRequest(parent=parent)
                 page_result = self.client.list_recommendations(request=request)
                 for response in page_result:
-                    result.append(response.content.overview['resource'])
+                    vm_name = response.content.overview['resource'].split('/')[-1]
+                    result.append(vm_name)
             return result
         except:
             pass         
