@@ -131,12 +131,12 @@ class Compute(object):
     def list_ephemeral_ip_vm(self):
         try:
             result = []
-            address_list = []
             # VPC IP list
-            vm_address_list = []
+            address_list = []
             for address in self.ips:
                 address_list.append(address.address)
             # VM external IP list
+            vm_address_list = []            
             for instance in self.all_instances:
                 for network in instance.network_interfaces:
                     for i in network.access_configs:
@@ -190,9 +190,37 @@ class Compute(object):
                     result.append("%s is to expire in %s days "%(response.name, remaining_days))
             return result
         except:
-            pass                
+            pass
 
 
+    def list_ephemeral_external_ip_lb(self):
+        try:
+            result = []
+            # VPC IP list
+            address_list = []
+            for address in self.ips:
+                address_list.append(address.address)
+            # LB IP list
+            lb_ip_list = []
+            client = compute_v1.ForwardingRulesClient()
+            request = compute_v1.AggregatedListForwardingRulesRequest(
+                project = self.project,
+            )
+            page_result = client.aggregated_list(request=request)        
+            for region, response in page_result:
+                if response.forwarding_rules:
+                    for forwarding_rule in response.forwarding_rules:
+                        # print("%s:%s"%(region,forwarding_rule.I_p_address))
+                        if forwarding_rule.load_balancing_scheme != 'INTERNAL':
+                            lb_ip_list.append(forwarding_rule.I_p_address)
+            # check if LB external IP in VPC IP list
+            for i in lb_ip_list:
+                if (i not in address_list):
+                    result.append(i)
+            return result
+        except:
+            pass            
+        
 # if remaining_days >= 0 and remaining_days < 30:
 #                 expiring_soon_num += 1
 
@@ -206,4 +234,4 @@ class Compute(object):
     #         print(response)        
 
 # aa = Compute('speedy-victory-336109')
-# print(aa.list_expiring_soon_ssl_certificates())
+# print(aa.list_ephemeral_external_ip_lb())
