@@ -1,4 +1,5 @@
 import googleapiclient.discovery as discovery
+from loguru import logger
 
 
 class Logging(object):
@@ -12,7 +13,8 @@ class Logging(object):
             req = self.log.projects().locations().buckets().list(parent='projects/%s/locations/-' % self.project)
             resp = req.execute()
             return resp['buckets']
-        except:
+        except Exception as e:
+            logger.warning(e)
             pass
 
 
@@ -27,7 +29,8 @@ class Logging(object):
             if num == 0:
                 result.append("Not Enabled")
             return result
-        except:
+        except Exception as e:
+            logger.warning(e)
             pass
 
 

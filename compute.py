@@ -1,6 +1,9 @@
 from google.cloud import compute_v1
 from resourcemanager import ResourceManager
 from datetime import datetime,timedelta, timezone
+from loguru import logger
+import sys
+
 
 class Compute(object):
     def __init__(self, project):
@@ -9,9 +12,11 @@ class Compute(object):
         self.ips = self.list_ips()
         self.ssl_certificates = self.list_ssl_certificates()
 
+
     def list_all_instances(self):
+        logger.debug('%s: list_all_instances' % self.project)   
+        result = []
         try:
-            result = []
             instance_client = compute_v1.InstancesClient()
             request = {"project" : self.project}
             agg_list = instance_client.aggregated_list(request=request)
@@ -19,14 +24,16 @@ class Compute(object):
                 if response.instances:
                     for instance in response.instances:
                         result.append(instance)
-            return result
-        except:
-            pass
+        except Exception as e:
+            logger.warning(e)
+        finally:
+            return result            
 
 
     def list_ips(self):
+        logger.debug('%s: list_ips' % self.project)   
+        result = []
         try:
-            result = []
             address_client = compute_v1.AddressesClient()
             request = compute_v1.AggregatedListAddressesRequest(project=self.project)
             page_result = address_client.aggregated_list(request=request)
@@ -34,14 +41,33 @@ class Compute(object):
                 if response.addresses:
                     for address in response.addresses: 
                         result.append(address)
+        except Exception as e:
+            logger.warning(e)
+        finally:
+            return result            
+
+
+    def list_ssl_certificates(self):
+        logger.debug('%s: list_ssl_certificates' % self.project)   
+        result = []        
+        try:
+            expired_num = 0
+            expiring_soon_num = 0
+            client = compute_v1.SslCertificatesClient()
+            request = compute_v1.ListSslCertificatesRequest(project=self.project,)
+            page_result = client.list(request=request)
+            for response in page_result:
+                result.append(response)
+        except Exception as e:
+            logger.warning(e)
+        finally:
             return result
-        except:
-            pass            
 
 
     def list_all_instances_zones(self):
+        logger.debug('%s: list_all_instances_zones' % self.project)   
+        result = []        
         try:
-            result = []
             instance_client = compute_v1.InstancesClient()
             request = {"project" : self.project}
             agg_list = instance_client.aggregated_list(request=request)
@@ -49,24 +75,29 @@ class Compute(object):
                 if response.instances:
                         result.append(zone.split('/')[-1])
             return result
-        except:
-            pass        
+        except Exception as e:
+            logger.warning(e)
+        finally:
+            return result    
 
 
     def list_idle_ips(self):
+        logger.debug('%s: list_idle_ips' % self.project)           
+        result = []        
         try:
-            result = []
             for address in self.ips:
                 if address.status == 'RESERVED' and address.address_type == 'EXTERNAL':
                     result.append(address.address)
+        except Exception as e:
+            logger.warning(e)
+        finally:
             return result
-        except:
-            pass
 
 
     def list_idle_disks(self):
+        logger.debug('%s: list_idle_disks' % self.project)             
+        result = []        
         try:
-            result = []
             disk_client = compute_v1.DisksClient()
             request = compute_v1.AggregatedListDisksRequest(project=self.project)
             page_result = disk_client.aggregated_list(request=request)
@@ -75,62 +106,66 @@ class Compute(object):
                     for disk in response.disks:
                         if not disk.users:
                             result.append("%s idle %sGB" % (disk.name, disk.size_gb))
+        except Exception as e:
+            logger.warning(e)
+        finally:
             return result
-        except:
-            pass        
 
 
     def list_all_regions(self):
+        logger.debug('%s: list_all_regions' % self.project)            
+        result = []
         try:
-            result = []
             client = compute_v1.RegionsClient()
             request = compute_v1.ListRegionsRequest(project=self.project)
             page_result = client.list(request=request)
             for response in page_result:
                 result.append(response.name)
+        except Exception as e:
+            logger.warning(e)
+        finally:
             return result
-        except:
-            pass
 
 
     def list_no_snapshots_project(self):
+        logger.debug('%s: list_no_snapshots_project' % self.project)   
+        result = []        
         try:
-            result = []
             client = compute_v1.SnapshotsClient()
             request = compute_v1.ListSnapshotsRequest(project=self.project)
             page_result = client.list(request=request)
             for response in page_result:
                 result.append(response.name)
-            if len(result) == 0:
-                return ['No Snapshots']
-            else:
-                pass
-        except:
-            pass
+                if len(result) == 0:
+                    result = ['No Snapshots']
+                else:
+                    result = []
+        except Exception as e:
+            logger.warning(e)
+        finally:
+            return result
 
 
     def list_no_deletion_protection(self):
+        logger.debug('%s: list_no_deletion_protection' % self.project)   
+        result = []        
         try:
-            result = []
-            result_num = 0
             resourcemanager = ResourceManager(self.project)
             project_name = resourcemanager.get_project_name()
             all_instances = self.all_instances
             for instance in all_instances:
                 if instance.deletion_protection == False:
-                    result_num += 1
-            if result_num > 0:
-                result.append(result_num)
-                return result
-            else:
-                pass
-        except:
-            pass            
+                    result.append(instance.name)
+        except Exception as e:
+            logger.warning(e)
+        finally:
+            return result
 
 
     def list_ephemeral_ip_vm(self):
+        logger.debug('%s: list_ephemeral_ip_vm' % self.project)           
+        result = []        
         try:
-            result = []
             # VPC IP list
             address_list = []
             for address in self.ips:
@@ -145,57 +180,48 @@ class Compute(object):
             for i in vm_address_list:
                 if (i not in address_list):
                     result.append(i)
-            return result
-        except:
-            pass
-
-           
-    def list_ssl_certificates(self):
-        try:
-            result = []
-            expired_num = 0
-            expiring_soon_num = 0
-            client = compute_v1.SslCertificatesClient()
-            request = compute_v1.ListSslCertificatesRequest(project=self.project,)
-            page_result = client.list(request=request)
-            for response in page_result:
-                result.append(response)
-            return result
-        except:
-            pass                
+        except Exception as e:
+            logger.warning(e)
+        finally:
+            return result               
 
 
     def list_expired_ssl_certificates(self):
+        logger.debug('%s: list_expired_ssl_certificates' % self.project)   
+        result = []
         try:
-            result = []
             current_utc = datetime.utcnow().replace(tzinfo=timezone.utc)
             for response in self.ssl_certificates:
                 expire_time_utc = datetime.strptime(response.expire_time,"%Y-%m-%dT%H:%M:%S.%f%z").replace(tzinfo=timezone.utc)
                 remaining_days = (expire_time_utc - current_utc).days
                 if remaining_days < 0:
-                    result.append("%s has expired" %s (response.name))
-            return result
-        except:
-            pass                
+                    result.append("%s has expired" % (response.name))
+        except Exception as e:
+            logger.warning(e)
+        finally:
+            return result              
 
 
     def list_expiring_soon_ssl_certificates(self):
+        logger.debug('%s: list_expiring_soon_ssl_certificates' % self.project)       
+        result = []            
         try:        
-            result = []
             current_utc = datetime.utcnow().replace(tzinfo=timezone.utc)
             for response in self.ssl_certificates:
                 expire_time_utc = datetime.strptime(response.expire_time,"%Y-%m-%dT%H:%M:%S.%f%z").replace(tzinfo=timezone.utc)
                 remaining_days = (expire_time_utc - current_utc).days
                 if remaining_days >= 0 and remaining_days < 30:
                     result.append("%s is to expire in %s days "%(response.name, remaining_days))
-            return result
-        except:
-            pass
+        except Exception as e:
+            logger.warning(e)
+        finally:
+            return result 
 
 
     def list_ephemeral_external_ip_lb(self):
+        logger.debug('%s: list_ephemeral_external_ip_lb' % self.project)   
+        result = []        
         try:
-            result = []
             # VPC IP list
             address_list = []
             for address in self.ips:
@@ -217,9 +243,29 @@ class Compute(object):
             for i in lb_ip_list:
                 if (i not in address_list):
                     result.append(i)
-            return result
-        except:
-            pass            
+        except Exception as e:
+            logger.warning(e)
+        finally:
+            return result          
+
+
+    def list_disabled_log_svc(self):
+        logger.debug('%s: list_disabled_log_svc' % self.project)   
+        result = []        
+        try:
+            client = compute_v1.BackendServicesClient()
+            request = compute_v1.ListBackendServicesRequest(
+                project = self.project,
+            )
+            page_result = client.list(request=request)
+            for response in page_result:
+                if response.log_config.enable == False:
+                    result.append(response.name)
+        except Exception as e:
+            logger.warning(e)
+        finally:
+            return result 
+
         
 # if remaining_days >= 0 and remaining_days < 30:
 #                 expiring_soon_num += 1
@@ -234,4 +280,4 @@ class Compute(object):
     #         print(response)        
 
 # aa = Compute('speedy-victory-336109')
-# print(aa.list_ephemeral_external_ip_lb())
+# print(aa.list_no_snapshots_project())

@@ -1,5 +1,6 @@
 from google.cloud import essential_contacts_v1
 from resourcemanager import ResourceManager
+from loguru import logger
 
 class Contacts(object):
     def __init__(self, project):
@@ -18,7 +19,8 @@ class Contacts(object):
                 result.append(response.email)
             if len(result) == 0:
                 return(['Not Configured'])
-        except:
+        except Exception as e:
+            logger.warning(e)
             pass
 
 # aa = Contacts('speedy-victory-336109')   

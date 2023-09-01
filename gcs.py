@@ -1,4 +1,5 @@
 from google.cloud import storage
+from loguru import logger
 
 class GCS(object):
     def __init__(self, project):
@@ -13,8 +14,9 @@ class GCS(object):
             for bucket in buckets:
                 result.append(bucket)
             return result
-        except:
-            pass        
+        except Exception as e:
+            logger.warning(e)
+            pass       
 
     def list_public_buckets(self):
         try:
@@ -27,8 +29,9 @@ class GCS(object):
                         if member == 'allUsers':
                             result.append(bucket.name)
             return result
-        except:
-            pass            
+        except Exception as e:
+            logger.warning(e)
+            pass           
 
 # aa = GCS('speedy-victory-336109')   
 # print(aa.list_public_buckets())            

@@ -1,11 +1,18 @@
 from csv import writer, DictWriter
+from google.cloud import servicemanagement_v1
+from loguru import logger
+
 
 def write_csv_header(csv_name):
-    field_names = ['project_name','pillar_name', 'product_name','check_name','result']
-    with open(csv_name, 'a') as f:
-        writer_object = DictWriter(f, fieldnames=field_names)    
-        writer_object.writeheader()
-        f.close()
+    try:
+        field_names = ['project_name','pillar_name', 'product_name','check_name','result']
+        with open(csv_name, 'a') as f:
+            writer_object = DictWriter(f, fieldnames=field_names)    
+            writer_object.writeheader()
+            f.close()
+    except Exception as e:
+        logger.warning(e)        
+
 
 def write_csv(csv_name, project_name, result, pillar_name, product_name, check_name):
     field_names = ['project_name','pillar_name', 'product_name','check_name','result']
@@ -22,3 +29,17 @@ def write_csv(csv_name, project_name, result, pillar_name, product_name, check_n
                 dict['result'] = i
                 writer_object.writerow(dict)
         f.close()
+
+
+def list_enabled_services(project):
+    result = []
+    client = servicemanagement_v1.ServiceManagerClient()
+    request = servicemanagement_v1.ListServicesRequest(
+        consumer_id = "project:"+project
+    )
+    page_result = client.list_services(request=request)
+    for response in page_result:
+        result.append(response.service_name) 
+    return result
+
+# sample_list_services('speedy-victory-336109')       

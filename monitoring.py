@@ -1,4 +1,5 @@
 from google.cloud import monitoring_v3
+from loguru import logger
 
 class Monitor(object):
     def __init__(self, project):
@@ -31,7 +32,8 @@ class Monitor(object):
                     # print("%s %s quota usage is %.2f"  %(project_id, quota_metric, point_data))
                     result.append("%s quota is %.2f"%(quota_metric, point_data*100))
             return result
-        except:
+        except Exception as e:
+            logger.warning(e)
             pass
 
 # aa = Monitor('speedy-victory-336109')
