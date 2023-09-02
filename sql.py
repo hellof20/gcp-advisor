@@ -28,7 +28,7 @@ class SQL(object):
         try:
             for instance in self.instances:
                 if 'maintenanceWindow' in instance['settings']:
-                    logger.debug("%s: %s" %(instance['name'],instance['settings']['maintenanceWindow']))
+                    # logger.debug("%s: %s" %(instance['name'],instance['settings']['maintenanceWindow']))
                     hour = instance['settings']['maintenanceWindow']['hour']
                     day = instance['settings']['maintenanceWindow']['day']
                     if hour == 0 and day == 0:
@@ -41,11 +41,32 @@ class SQL(object):
 
     def check_sql_ha(self):
         logger.debug('%s: check_sql_ha' % self.project)        
-        result = []        
+        result = []
         try:
             for instance in self.instances:
-                if 'secondaryZone' not in instance['settings']['locationPreference']:
+                if instance['settings']['availabilityType'] == 'ZONAL' and instance['instanceType'] != 'READ_REPLICA_INSTANCE':
                     result.append(instance['name'])
+        except Exception as e:
+            logger.warning(e)
+        finally:
+            return result
+
+
+    def check_sql_slow_query(self):
+        logger.debug('%s: check_sql_slow_query' % self.project)        
+        result = []
+        flag_dict = {}
+        try:
+            for instance in self.instances:
+                if 'databaseFlags' in instance['settings']:                
+                    for flag in instance['settings']['databaseFlags']:
+                        flag_dict[flag['name']] = flag['value']
+                else:
+                    result.append(instance['name'])
+            if 'slow_query_log' not in flag_dict:
+                result.append(instance['name'])
+            if 'slow_query_log' in flag_dict and flag_dict['slow_query_log'] == 'off':
+                result.append(instance['name'])
         except Exception as e:
             logger.warning(e)
         finally:
@@ -108,8 +129,7 @@ class SQL(object):
         finally:
             return result            
 
-# aa = SQL('aethergazeren')   
-# instances = aa.check_sql_maintenance()
-# print(instances)
+# aa = SQL('pangu-358004')   
+# print(aa.check_sql_slow_query())
 # for instance in instances:
 #     print(instance['region'])

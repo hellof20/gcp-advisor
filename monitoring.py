@@ -7,8 +7,9 @@ class Monitor(object):
         self.monitor = monitoring_v3.QueryServiceClient()
 
     def quota_usage(self):
+        logger.debug('%s: quota_usage' % self.project)          
+        result = []        
         try:
-            result = []
             threshold = 0.6
             query= '''
             fetch consumer_quota
@@ -31,10 +32,10 @@ class Monitor(object):
                 if point_data > threshold:
                     # print("%s %s quota usage is %.2f"  %(project_id, quota_metric, point_data))
                     result.append("%s quota is %.2f"%(quota_metric, point_data*100))
-            return result
         except Exception as e:
             logger.warning(e)
-            pass
+        finally:
+            return result
 
 # aa = Monitor('speedy-victory-336109')
 # print(aa.quota_usage())

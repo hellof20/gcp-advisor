@@ -6,24 +6,30 @@ class ResourceManager(object):
         self.project = project
 
     def get_project_name(self):
+        logger.debug('%s: get_project_name' % self.project)        
+        result = []
         try:
             client = resourcemanager_v3.ProjectsClient()
             project_path = self.project_path()
             request = resourcemanager_v3.GetProjectRequest(name=project_path)
             response = client.get_project(request=request)
-            return response.display_name
+            result = response.display_name
         except Exception as e:
             logger.warning(e)
-            pass
+        finally:
+            return result 
     
     def project_path(self):
+        logger.debug('%s: project_path' % self.project)        
+        result = []
         try:
             client = resourcemanager_v3.ProjectsClient()
             response = client.project_path(self.project)
-            return response
+            result = response
         except Exception as e:
             logger.warning(e)
-            pass
+        finally:
+            return result 
 
-# aa = ResourceManager('speedy-victory-336109')
+# aa = ResourceManager('aethergazeren')
 # print(aa.get_project_name())

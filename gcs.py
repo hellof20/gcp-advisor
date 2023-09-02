@@ -8,30 +8,33 @@ class GCS(object):
         self.buckets = self.list_buckets()
 
     def list_buckets(self):
+        logger.debug('%s: list_buckets' % self.project)   
+        result = []               
         try:
-            result = []
-            buckets = self.storage_client.list_buckets()
+            buckets = self.storage_client.list_buckets(
+                project = self.project
+            )
             for bucket in buckets:
                 result.append(bucket)
-            return result
         except Exception as e:
             logger.warning(e)
-            pass       
+        finally:
+            return result       
 
     def list_public_buckets(self):
+        logger.debug('%s: list_public_buckets' % self.project)   
+        result = []             
         try:
-            result = []
             for bucket in self.buckets:
                 bindings = bucket.get_iam_policy().bindings
-                # print(bindings)
                 for i in bindings:
                     for member in i['members']:
                         if member == 'allUsers':
                             result.append(bucket.name)
-            return result
         except Exception as e:
             logger.warning(e)
-            pass           
+        finally:
+            return result          
 
 # aa = GCS('speedy-victory-336109')   
 # print(aa.list_public_buckets())            

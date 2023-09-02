@@ -136,10 +136,10 @@ class Compute(object):
             page_result = client.list(request=request)
             for response in page_result:
                 result.append(response.name)
-                if len(result) == 0:
-                    result = ['No Snapshots']
-                else:
-                    result = []
+            if len(result) == 0:
+                result = ['No Snapshots']
+            else:
+                result = []
         except Exception as e:
             logger.warning(e)
         finally:

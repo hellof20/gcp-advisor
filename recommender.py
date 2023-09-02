@@ -31,7 +31,7 @@ class Recommender(object):
 
     def recommender_idle_sql(self):
         logger.debug('%s: recommender_idle_sql' % self.project)            
-        result = []        
+        result = []
         try:        
             for instance in self.sql.instances:
                 region = instance['region']
@@ -45,8 +45,8 @@ class Recommender(object):
         finally:
             return result 
 
-# aa = Recommender('speedy-victory-336109')   
-# print(aa.recommender_idle_sql())
+# aa = Recommender('aethergazeren')   
+# print(aa.recommender_idle_vm())
 
 # https://cloud.google.com/recommender/docs/recommenders
 # https://cloud.google.com/sql/docs/mysql/recommender-sql-idle

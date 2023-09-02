@@ -9,18 +9,22 @@ class Logging(object):
         self.buckets = self.list_log_bucket()
     
     def list_log_bucket(self):
+        logger.debug('%s: list_log_bucket' % self.project)          
+        result = []
         try:
             req = self.log.projects().locations().buckets().list(parent='projects/%s/locations/-' % self.project)
             resp = req.execute()
-            return resp['buckets']
+            result = resp['buckets']
         except Exception as e:
             logger.warning(e)
-            pass
+        finally:
+            return result
 
 
     def check_if_analytics_enabled(self):
+        logger.debug('%s: check_if_analytics_enabled' % self.project)          
+        result = []        
         try:        
-            result = []
             num = 0
             for bucket in self.buckets:
                 if 'analyticsEnabled' in bucket:
@@ -28,10 +32,10 @@ class Logging(object):
                         num += 1
             if num == 0:
                 result.append("Not Enabled")
-            return result
         except Exception as e:
             logger.warning(e)
-            pass
+        finally:
+            return result
 
 
 # aa = Logging('speedy-victory-336109')   

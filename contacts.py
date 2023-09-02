@@ -7,8 +7,9 @@ class Contacts(object):
         self.project = project
 
     def list_essential_contacts(self):
+        logger.debug('%s: list_essential_contacts' % self.project)          
+        result = []
         try:
-            result = []
             client = essential_contacts_v1.EssentialContactsServiceClient()
             request = essential_contacts_v1.ListContactsRequest(parent="projects/%s"%self.project,)
             resourcemanager = ResourceManager(self.project)
@@ -18,10 +19,13 @@ class Contacts(object):
             for response in page_result:
                 result.append(response.email)
             if len(result) == 0:
-                return(['Not Configured'])
+                result = ['Not Configured']
+            else:
+                result = []
         except Exception as e:
             logger.warning(e)
-            pass
+        finally:
+            return result
 
 # aa = Contacts('speedy-victory-336109')   
 # print(aa.list_essential_contacts())
