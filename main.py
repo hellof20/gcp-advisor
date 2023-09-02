@@ -16,7 +16,7 @@ from loguru import logger
 
 logger.remove()
 # logger.add('gcp_advisor.log', level='DEBUG', format = '{time} - {message}')
-logger.add(sys.stdout, level='DEBUG', format = '{time} - {message}')
+logger.add(sys.stdout, level='INFO', format = '{time} - {message}')
 
 @click.command()
 @click.option("--projects", prompt="project_ids", help="One or more project id separated by commas")
