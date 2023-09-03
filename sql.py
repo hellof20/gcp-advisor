@@ -80,7 +80,9 @@ class SQL(object):
         result = []
         try:
             for instance in self.instances:
-                if 'insightsConfig' in instance['settings']:
+                if 'insightsConfig' not in instance['settings']:
+                    result.append(instance['name'])
+                else:
                     if 'queryInsightsEnabled' not in instance['settings']['insightsConfig']:
                         result.append(instance['name'])
         except Exception as e:

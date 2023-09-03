@@ -61,9 +61,8 @@ class GKE(object):
         result = []        
         try:   
             for cluster in self.result.clusters:
-                for pool in cluster.node_pools:
-                    if pool.network_config.enable_private_nodes == False:
-                        result.append(cluster.name)
+                if cluster.private_cluster_config.enable_private_nodes == False:
+                    result.append(cluster.name)
             result = list(set(result))
         except Exception as e:
             logger.warning(e)

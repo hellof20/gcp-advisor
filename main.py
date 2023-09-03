@@ -71,7 +71,7 @@ def func(csv_name, project):
         write_csv(csv_name, project_name, sql.check_sql_ha(), pillar_name = '可靠性', product_name = 'SQL', check_name = 'SQL实例未开启高可用')        
         write_csv(csv_name, project_name, sql.check_sql_delete_protect(), pillar_name = '安全', product_name = 'SQL', check_name = 'SQL实例未启用删除保护')        
         write_csv(csv_name, project_name, sql.check_sql_public_access(), pillar_name = '安全', product_name = 'SQL', check_name = 'SQL实例开放公网')        
-        write_csv(csv_name, project_name, sql.check_sql_query_insight(), pillar_name = '卓越运维', product_name = 'SQL', check_name = 'SQL实例未启用了QueryInsight')
+        write_csv(csv_name, project_name, sql.check_sql_query_insight(), pillar_name = '卓越运维', product_name = 'SQL', check_name = 'SQL实例未启用QueryInsight')
         write_csv(csv_name, project_name, sql.check_sql_storage_auto_resize(), pillar_name = '可靠性', product_name = 'SQL', check_name = 'SQL实例未启用磁盘自动增长')
         write_csv(csv_name, project_name, sql.check_sql_slow_query(), pillar_name = '卓越运维', product_name = 'SQL', check_name = 'SQL实例慢日志未启用')
         write_csv(csv_name, project_name, sql.recommender_idle_sql(), pillar_name = '成本', product_name = 'SQL', check_name = '空闲SQL实例')   
