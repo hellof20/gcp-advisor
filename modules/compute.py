@@ -2,7 +2,6 @@ from google.cloud import compute_v1
 from google.cloud import recommender_v1
 from datetime import datetime,timedelta, timezone
 from loguru import logger
-import sys
 
 
 class Compute(object):

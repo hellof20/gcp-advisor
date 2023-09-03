@@ -1,5 +1,4 @@
 from csv import writer, DictWriter
-from google.cloud import servicemanagement_v1
 from loguru import logger
 
 
@@ -29,17 +28,5 @@ def write_csv(csv_name, project_name, result, pillar_name, product_name, check_n
                 dict['result'] = i
                 writer_object.writerow(dict)
         f.close()
-
-
-def list_enabled_services(project):
-    result = []
-    client = servicemanagement_v1.ServiceManagerClient()
-    request = servicemanagement_v1.ListServicesRequest(
-        consumer_id = "project:"+project
-    )
-    page_result = client.list_services(request=request)
-    for response in page_result:
-        result.append(response.service_name) 
-    return result
 
 # sample_list_services('speedy-victory-336109')       
