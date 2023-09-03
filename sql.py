@@ -154,7 +154,7 @@ class SQL(object):
         finally:
             return result                     
 
-aa = SQL('farlight-hadoop')   
-print(aa.check_sql_slow_query())
+# aa = SQL('farlight-hadoop')   
+# print(aa.check_sql_slow_query())
 # for instance in instances:
 #     print(instance['region'])
