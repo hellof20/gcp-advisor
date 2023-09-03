@@ -10,7 +10,7 @@ class Monitor(object):
         logger.debug('%s: quota_usage' % self.project)          
         result = []        
         try:
-            threshold = 0.6
+            threshold = 0.7
             query= '''
             fetch consumer_quota
             | { metric 'serviceruntime.googleapis.com/quota/allocation/usage'; metric 'serviceruntime.googleapis.com/quota/limit' }

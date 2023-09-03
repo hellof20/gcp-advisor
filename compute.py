@@ -179,12 +179,12 @@ class Compute(object):
                             vm_address_list.append(i.nat_i_p)
             # check if VM external IP in VPC IP list
             for i in vm_address_list:
-                if (i not in address_list):
+                if (i not in address_list) and i != '':
                     result.append(i)
         except Exception as e:
             logger.warning(e)
         finally:
-            return result               
+            return result
 
 
     def list_expired_ssl_certificates(self):
@@ -285,5 +285,5 @@ class Compute(object):
         finally:
             return result   
 
-# aa = Compute('domino-287405')
-# print(aa.list_expiring_soon_ssl_certificates())
+# aa = Compute('farlight-hadoop')
+# print(aa.list_ephemeral_ip_vm())
