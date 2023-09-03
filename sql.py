@@ -57,17 +57,17 @@ class SQL(object):
     def check_sql_slow_query(self):
         logger.debug('%s: check_sql_slow_query' % self.project)        
         result = []
-        flag_dict = {}
         try:
             for instance in self.instances:
-                if 'databaseFlags' in instance['settings']:                
+                flag_dict = {} 
+                if 'databaseFlags' in instance['settings']:  
                     for flag in instance['settings']['databaseFlags']:
                         flag_dict[flag['name']] = flag['value']
+                    if 'slow_query_log' not in flag_dict:
+                        result.append(instance['name'])
+                    if 'slow_query_log' in flag_dict and flag_dict['slow_query_log'] == 'off':
+                        result.append(instance['name'])                    
                 else:
-                    result.append(instance['name'])
-                if 'slow_query_log' not in flag_dict:
-                    result.append(instance['name'])
-                if 'slow_query_log' in flag_dict and flag_dict['slow_query_log'] == 'off':
                     result.append(instance['name'])
         except Exception as e:
             logger.warning(e)
@@ -154,7 +154,7 @@ class SQL(object):
         finally:
             return result                     
 
-# aa = SQL('farlight-hadoop')   
-# print(aa.check_sql_delete_protect())
+aa = SQL('farlight-hadoop')   
+print(aa.check_sql_slow_query())
 # for instance in instances:
 #     print(instance['region'])
