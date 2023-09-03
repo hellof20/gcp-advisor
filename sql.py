@@ -94,8 +94,11 @@ class SQL(object):
         result = []
         try:
             for instance in self.instances:
-                if not instance['settings']['deletionProtectionEnabled']:
+                if 'deletionProtectionEnabled' not in instance['settings']:
                     result.append(instance['name'])
+                else:
+                    if instance['settings']['deletionProtectionEnabled'] == False:
+                        result.append(instance['name'])
         except Exception as e:
             logger.warning(e)
         finally:
@@ -149,7 +152,7 @@ class SQL(object):
         finally:
             return result                     
 
-# aa = SQL('farlight-dap')   
-# print(aa.check_sql_query_insight())
+# aa = SQL('farlight-hadoop')   
+# print(aa.check_sql_delete_protect())
 # for instance in instances:
 #     print(instance['region'])
