@@ -1,5 +1,4 @@
 from google.cloud import essential_contacts_v1
-from resourcemanager import ResourceManager
 from loguru import logger
 
 class Contacts(object):
@@ -12,8 +11,6 @@ class Contacts(object):
         try:
             client = essential_contacts_v1.EssentialContactsServiceClient()
             request = essential_contacts_v1.ListContactsRequest(parent="projects/%s"%self.project,)
-            resourcemanager = ResourceManager(self.project)
-            project_name = resourcemanager.get_project_name()
             # request = essential_contacts_v1.ListContactsRequest(parent='organizations/235918811881',)
             page_result = client.list_contacts(request=request)
             for response in page_result:

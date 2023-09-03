@@ -1,5 +1,5 @@
 from google.cloud import compute_v1
-from resourcemanager import ResourceManager
+from google.cloud import recommender_v1
 from datetime import datetime,timedelta, timezone
 from loguru import logger
 import sys
@@ -11,6 +11,8 @@ class Compute(object):
         self.all_instances = self.list_all_instances()
         self.ips = self.list_ips()
         self.ssl_certificates = self.list_ssl_certificates()
+        self.recommender_client = recommender_v1.RecommenderClient()
+        self.instance_zones = self.list_all_instances_zones()
 
 
     def list_all_instances(self):
@@ -105,7 +107,7 @@ class Compute(object):
                 if response.disks:
                     for disk in response.disks:
                         if not disk.users:
-                            result.append("%s idle %sGB" % (disk.name, disk.size_gb))
+                            result.append("%s: %sGB" % (disk.name, disk.size_gb))
         except Exception as e:
             logger.warning(e)
         finally:
@@ -150,11 +152,9 @@ class Compute(object):
         logger.debug('%s: list_no_deletion_protection' % self.project)   
         result = []        
         try:
-            resourcemanager = ResourceManager(self.project)
-            project_name = resourcemanager.get_project_name()
             all_instances = self.all_instances
             for instance in all_instances:
-                if instance.deletion_protection == False:
+                if instance.deletion_protection == False and instance.name[0:4] != 'gke-':
                     result.append(instance.name)
         except Exception as e:
             logger.warning(e)
@@ -173,9 +173,10 @@ class Compute(object):
             # VM external IP list
             vm_address_list = []            
             for instance in self.all_instances:
-                for network in instance.network_interfaces:
-                    for i in network.access_configs:
-                        vm_address_list.append(i.nat_i_p)
+                if instance.name[0:4] != 'gke-':  # 去掉GKE节点
+                    for network in instance.network_interfaces:
+                        for i in network.access_configs:
+                            vm_address_list.append(i.nat_i_p)
             # check if VM external IP in VPC IP list
             for i in vm_address_list:
                 if (i not in address_list):
@@ -208,10 +209,11 @@ class Compute(object):
         try:        
             current_utc = datetime.utcnow().replace(tzinfo=timezone.utc)
             for response in self.ssl_certificates:
-                expire_time_utc = datetime.strptime(response.expire_time,"%Y-%m-%dT%H:%M:%S.%f%z").replace(tzinfo=timezone.utc)
-                remaining_days = (expire_time_utc - current_utc).days
-                if remaining_days >= 0 and remaining_days < 30:
-                    result.append("%s is to expire in %s days "%(response.name, remaining_days))
+                if 'expire_time' in response:
+                    expire_time_utc = datetime.strptime(response.expire_time, "%Y-%m-%dT%H:%M:%S.%f%z").replace(tzinfo=timezone.utc)
+                    remaining_days = (expire_time_utc - current_utc).days
+                    if remaining_days >= 0 and remaining_days < 30:
+                        result.append("%s: %s days "%(response.name, remaining_days))
         except Exception as e:
             logger.warning(e)
         finally:
@@ -266,18 +268,22 @@ class Compute(object):
         finally:
             return result 
 
-        
-# if remaining_days >= 0 and remaining_days < 30:
-#                 expiring_soon_num += 1
 
-    # def list_router(self):
-    #     client = compute_v1.RoutersClient()
-    #     request = compute_v1.ListRoutersRequest(
-    #         project=self.project
-    #         )
-    #     page_result = client.list(request=request)
-    #     for response in page_result:
-    #         print(response)        
+    def recommender_idle_vm(self):
+        logger.debug('%s: recommender_idle_vm' % self.project)          
+        result = []
+        try:
+            for zone in self.instance_zones:
+                parent = 'projects/%s/locations/%s/recommenders/%s' %(self.project, zone, 'google.compute.instance.IdleResourceRecommender')
+                request = recommender_v1.ListRecommendationsRequest(parent=parent)
+                page_result = self.recommender_client.list_recommendations(request=request)
+                for response in page_result:
+                    vm_name = response.content.overview['resource'].split('/')[-1]
+                    result.append(vm_name)
+        except Exception as e:
+            logger.warning(e)
+        finally:
+            return result   
 
-# aa = Compute('speedy-victory-336109')
-# print(aa.list_no_snapshots_project())
+# aa = Compute('domino-287405')
+# print(aa.list_expiring_soon_ssl_certificates())

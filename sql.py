@@ -1,4 +1,5 @@
 import googleapiclient.discovery as discovery
+from google.cloud import recommender_v1
 from loguru import logger
 
 class SQL(object):
@@ -6,6 +7,7 @@ class SQL(object):
         self.project = project
         self.sqladmin = discovery.build('sqladmin', 'v1')
         self.instances = self.list_sql_instances()
+        self.recommender_client = recommender_v1.RecommenderClient()
 
 
     def list_sql_instances(self):
@@ -63,10 +65,10 @@ class SQL(object):
                         flag_dict[flag['name']] = flag['value']
                 else:
                     result.append(instance['name'])
-            if 'slow_query_log' not in flag_dict:
-                result.append(instance['name'])
-            if 'slow_query_log' in flag_dict and flag_dict['slow_query_log'] == 'off':
-                result.append(instance['name'])
+                if 'slow_query_log' not in flag_dict:
+                    result.append(instance['name'])
+                if 'slow_query_log' in flag_dict and flag_dict['slow_query_log'] == 'off':
+                    result.append(instance['name'])
         except Exception as e:
             logger.warning(e)
         finally:
@@ -127,7 +129,24 @@ class SQL(object):
         except Exception as e:
             logger.warning(e)
         finally:
-            return result            
+            return result    
+
+
+    def recommender_idle_sql(self):
+        logger.debug('%s: recommender_idle_sql' % self.project)            
+        result = []
+        try:        
+            for instance in self.instances:
+                region = instance['region']
+                parent = 'projects/%s/locations/%s/recommenders/%s' %(self.project, region, 'google.cloudsql.instance.IdleRecommender')
+                request = recommender_v1.ListRecommendationsRequest(parent=parent)
+                page_result = self.recommender_client.list_recommendations(request=request)
+                for response in page_result:
+                    result.append(response.content.overview['resource'])
+        except Exception as e:
+            logger.warning(e)
+        finally:
+            return result                     
 
 # aa = SQL('pangu-358004')   
 # print(aa.check_sql_slow_query())
