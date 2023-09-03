@@ -80,8 +80,9 @@ class SQL(object):
         result = []
         try:
             for instance in self.instances:
-                if 'queryInsightsEnabled' not in instance['settings']['insightsConfig']:
-                    result.append(instance['name'])
+                if 'insightsConfig' in instance['settings']:
+                    if 'queryInsightsEnabled' not in instance['settings']['insightsConfig']:
+                        result.append(instance['name'])
         except Exception as e:
             logger.warning(e)
         finally:
@@ -148,7 +149,7 @@ class SQL(object):
         finally:
             return result                     
 
-# aa = SQL('pangu-358004')   
-# print(aa.check_sql_slow_query())
+# aa = SQL('farlight-dap')   
+# print(aa.check_sql_query_insight())
 # for instance in instances:
 #     print(instance['region'])

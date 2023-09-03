@@ -111,12 +111,9 @@ def func(csv_name, project):
     else:
         logger.info('Google Cloud Logging not enabled.')
     
-    if 'essentialcontacts.googleapis.com' in enabled_services:
-        logger.info('Checking project %s Essential Contacts service ...' % project)        
-        contacts = Contacts(project)
-        write_csv(csv_name, project_name, contacts.list_essential_contacts(), pillar_name = '卓越运维', product_name = 'IAM', check_name = '未配置重要联系人')
-    else:
-        logger.info('Google Cloud Essential Contacts not enabled.')    
+    logger.info('Checking project %s Essential Contacts service ...' % project)        
+    contacts = Contacts(project)
+    write_csv(csv_name, project_name, contacts.list_essential_contacts(), pillar_name = '卓越运维', product_name = 'IAM', check_name = '未配置重要联系人') 
 
     if 'storage.googleapis.com' in enabled_services:
         logger.info('Checking project %s Storage service ...' % project)         
