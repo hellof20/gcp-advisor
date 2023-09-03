@@ -12,6 +12,8 @@ from gcs import GCS
 from contacts import Contacts
 from cloudlogging import Logging
 from loguru import logger
+from google.cloud import bigquery
+import datetime
 
 logger.remove()
 # logger.add('gcp_advisor.log', level='DEBUG', format = '{time} - {message}')
@@ -35,6 +37,8 @@ def main(projects):
     p.close()
     p.join()
     logger.info('All check success.')
+    save_result_to_bq_looker(csv_name)
+    logger.info('bigquery data inserted and looker report created.')
 
 
 def func(csv_name, project):
@@ -121,6 +125,55 @@ def func(csv_name, project):
         write_csv(csv_name, project_name, gcs.list_public_buckets(), pillar_name = '安全', product_name = 'GCS', check_name = '存储桶允许公开访问')
     else:
         logger.info('Google Cloud Storage not enabled.')    
+
+
+def save_result_to_bq_looker(csv_name):
+    # Get bigquery client
+    client = bigquery.Client()
+    
+    # Create a new database
+    dataset_name = "gcp_adviser"
+    dataset_id = f"{client.project}.{dataset_name}"
+    dataset = bigquery.Dataset(dataset_id)
+    try:
+        dataset = client.create_dataset(dataset)
+        print("Dataset {} crated.".format(dataset_id))
+    except:
+        print("Dataset {} already exists.".format(dataset_id))
+    
+    # Create a table.
+    current_time = datetime.datetime.now().strftime('%m-%d-%H-%M')
+    table_name = csv_name.split(".")[0] + "_" + current_time
+    table_id = dataset_id + "." + table_name
+    schema = [
+        bigquery.SchemaField("project_name", "STRING", mode="NULLABLE"),
+        bigquery.SchemaField("pillar_name", "STRING", mode="NULLABLE"),
+        bigquery.SchemaField("product_name", "STRING", mode="NULLABLE"),
+        bigquery.SchemaField("check_name", "STRING", mode="NULLABLE"),
+        bigquery.SchemaField("result", "STRING", mode="NULLABLE"),
+    ]
+    table = bigquery.Table(table_id, schema=schema)
+    table = client.create_table(table)
+    
+    # Write data from file to table.
+    job_config = bigquery.LoadJobConfig(
+        source_format=bigquery.SourceFormat.CSV,
+        skip_leading_rows=1,
+        autodetect=False,
+    )
+    with open(csv_name, "rb") as source_file:
+        job = client.load_table_from_file(source_file, table_id, job_config=job_config)
+    job.result()  # Waits for the job to complete.
+    table = client.get_table(table_id)
+    print(
+        "Loaded {} rows and {} columns to {}".format(
+            table.num_rows, len(table.schema), table_id
+        )
+    )
+    
+    # Generate the looker studio report link
+    dashbord_url= f"https://lookerstudio.google.com/reporting/create?c.reportId=159f197e-0e4a-403c-a785-5d2b571784d9&ds.ds0.connector=bigQuery&ds.ds0.type=TABLE&ds.ds0.projectId={client.project}&ds.ds0.datasetId={dataset_name}&ds.ds0.tableId={table_name}"
+    print ("click below looker report link to see result: \n" + dashbord_url)
 
     
 if __name__ == '__main__':
