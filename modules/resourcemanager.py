@@ -15,7 +15,7 @@ class ResourceManager(object):
             response = client.get_project(request=request)
             result = response.display_name
         except Exception as e:
-            logger.warning(e)
+            logger.error(e)
         finally:
             return result 
     
@@ -27,7 +27,7 @@ class ResourceManager(object):
             response = client.project_path(self.project)
             result = response
         except Exception as e:
-            logger.warning(e)
+            logger.error(e)
         finally:
             return result 
 

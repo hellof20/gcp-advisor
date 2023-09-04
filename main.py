@@ -16,42 +16,61 @@ from loguru import logger
 from google.cloud import bigquery
 import datetime
 
-logger.remove()
-# logger.add('gcp_advisor.log', level='DEBUG', format = '{time} - {message}')
-logger.add(sys.stdout, level='INFO', format = '{time} - {message}')
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+@click.command(context_settings=CONTEXT_SETTINGS)
+@click.option("-p", "--projects", prompt="project_ids", help="Required: one or more project id separated by commas")
+@click.option("-x", "--parallel", is_flag=True, help="Optional: check multiple projects in parallel")
+@click.option("--debug", is_flag=True, help="Optional: set log level to debug")
+# @click.option("--pillars", default = "all", required=False, help="Optional: one or more pillars you want to check, separated by commas. Choose from security,cost,availability,operation. Default is all.")
 
-@click.command()
-@click.option("--projects", prompt="project_ids", help="One or more project id separated by commas")
-# @click.option("--pillars", prompt="pillars", default = "all", help="项目id，多个项目用逗号分隔") todo
 
-
-def main(projects):
+def main(projects, **kwargs):
+    parallel = kwargs['parallel']
+    debug = kwargs['debug']
+    if debug:
+        logger.remove()
+        logger.add(sys.stdout, level='DEBUG', format="<level>{time} | {level} | {message}</level>")
+    else:
+        logger.remove()
+        logger.add(sys.stdout, level='INFO', format="<level>{time} | {level} | {message}</level>")
     csv_name = 'check_result.csv'
     if os.path.exists(csv_name):
         os.remove(csv_name)
     write_csv_header(csv_name)
     project_list = projects.split(',')
-    logger.info('Begin to check all projects ...')
-    p = Pool(len(project_list))
-    for project in project_list:
-        p.apply_async(func, args=(csv_name, project,))
-    p.close()
-    p.join()
-    logger.info('All check success.')
-    save_result_to_bq_looker(csv_name)
-    logger.info('bigquery data inserted and looker report created.')
+    if parallel:
+        logger.success('Begin to check all projects in parallel ...')
+        p = Pool(len(project_list))
+        for project in project_list:
+            p.apply_async(func, args=(csv_name, project,))
+        p.close()
+        p.join()
+        logger.success('All check success.')
+    else:
+        logger.success('Begin to check all projects in sequence ...')
+        for project in project_list:
+            func(csv_name, project)
+        logger.success('All checks done.')
+    logger.info('Begin to generate report ...')
+    try:
+        save_result_to_bq_looker(csv_name)
+    except Exception as e:
+        logger.warning('%s: Generate report failed.'% project_name)
 
 
 def func(csv_name, project):
     logger.info('Checking project %s enabled services ...' % project)
-    enabled_services = list_enabled_services(project)
+    try:
+        enabled_services = list_enabled_services(project)
+    except Exception as e:
+        logger.error(e)
 
     logger.debug('%s: Get project name' % project) 
     resource = ResourceManager(project)
     project_name = resource.get_project_name()
 
     if 'compute.googleapis.com' in enabled_services:
-        logger.info('Checking project %s Compute Engine service ...' % project)
+        logger.info('Checking project %s Compute Engine service ...' % project_name)
         compute = Compute(project)
         write_csv(csv_name, project_name, compute.list_no_deletion_protection(), pillar_name = '安全', product_name = 'VM', check_name = '实例未启用删除保护')
         write_csv(csv_name, project_name, compute.list_ephemeral_ip_vm(), pillar_name = '安全', product_name = 'VM', check_name = '实例公网IP为临时IP')
@@ -64,10 +83,10 @@ def func(csv_name, project):
         write_csv(csv_name, project_name, compute.list_disabled_log_svc(), pillar_name = '卓越运维', product_name = 'LB', check_name = 'LB后端服务未启用日志')
         write_csv(csv_name, project_name, compute.recommender_idle_vm(), pillar_name = '成本', product_name = 'VM', check_name = '空闲实例')
     else:
-        logger.info('Google Cloud Compute Engine not enabled.')
+        logger.warning('%s: Compute Engine not enabled.'% project_name)
 
     if 'sqladmin.googleapis.com' in enabled_services:
-        logger.info('Checking project %s Cloud SQL service ...' % project)
+        logger.info('Checking project %s Cloud SQL service ...' % project_name)
         sql = SQL(project)
         write_csv(csv_name, project_name, sql.check_sql_maintenance(), pillar_name = '可靠性', product_name = 'SQL', check_name = 'SQL实例未配置维护窗口')
         write_csv(csv_name, project_name, sql.check_sql_ha(), pillar_name = '可靠性', product_name = 'SQL', check_name = 'SQL实例未开启高可用')        
@@ -78,51 +97,51 @@ def func(csv_name, project):
         write_csv(csv_name, project_name, sql.check_sql_slow_query(), pillar_name = '卓越运维', product_name = 'SQL', check_name = 'SQL实例慢日志未启用')
         write_csv(csv_name, project_name, sql.recommender_idle_sql(), pillar_name = '成本', product_name = 'SQL', check_name = '空闲SQL实例')   
     else:
-        logger.info('Google Cloud SQL not enabled.')
+        logger.warning('%s: Cloud SQL not enabled.'% project_name)
 
     if 'redis.googleapis.com' in enabled_services:
-        logger.info('Checking project %s Cloud Memorystore service ...' % project)
+        logger.info('Checking project %s Cloud Memorystore service ...' % project_name)
         redis = Redis(project)
         write_csv(csv_name, project_name, redis.check_redis_ha(), pillar_name = '可靠性', product_name = 'Redis', check_name = 'Redis实例未启用高可用')
         write_csv(csv_name, project_name, redis.check_redis_rdb(), pillar_name = '可靠性', product_name = 'Redis', check_name = 'Redis实例未启用RDB备份') 
         write_csv(csv_name, project_name, redis.check_redis_maintain_window(), pillar_name = '安全', product_name = 'Redis', check_name = 'Redis实例未设置维护窗口')  
     else:
-        logger.info('Google Cloud Memorystore not enabled.')  
+        logger.warning('%s: Redis not enabled.'% project_name)
 
     if 'container.googleapis.com' in enabled_services:
-        logger.info('Checking project %s GKE service ...' % project)
+        logger.info('Checking project %s GKE service ...' % project_name)
         gke = GKE(project)
         write_csv(csv_name, project_name, gke.check_gke_nodepool_upgrade(), pillar_name = '可靠性', product_name = 'GKE', check_name = 'GKE节点组自动升级未关闭')
         write_csv(csv_name, project_name, gke.check_gke_static_version(), pillar_name = '可靠性', product_name = 'GKE', check_name = 'GKE控制面版本不是静态版本')
         write_csv(csv_name, project_name, gke.check_gke_controller_regional(), pillar_name = '可靠性', product_name = 'GKE', check_name = 'GKE控制面不是区域级')
         write_csv(csv_name, project_name, gke.check_gke_public_cluster(), pillar_name = '安全性', product_name = 'GKE', check_name = 'GKE集群为公开集群')       
     else:
-        logger.info('Google Cloud GKE not enabled.')
+        logger.warning('%s: GKE not enabled.'% project_name)
 
     if 'monitoring.googleapis.com' in enabled_services:
-        logger.info('Checking project %s Monitoring service ...' % project)        
+        logger.info('Checking project %s Monitoring service ...' % project_name)        
         monitor = Monitor(project)
         write_csv(csv_name, project_name, monitor.quota_usage(), pillar_name = '卓越运维', product_name = 'Quota', check_name = '配额高于70%')
     else:
-        logger.info('Google Cloud Monitoring not enabled.')    
+        logger.warning('%s: Cloud Monitoring not enabled.'% project_name)   
 
     if 'logging.googleapis.com' in enabled_services:
-        logger.info('Checking project %s Logging service ...' % project)        
+        logger.info('Checking project %s Logging service ...' % project_name)        
         log = Logging(project)
         write_csv(csv_name, project_name, log.check_if_analytics_enabled(), pillar_name = '卓越运维', product_name = 'Logging', check_name = '未启用日志分析功能')    
     else:
-        logger.info('Google Cloud Logging not enabled.')
+        logger.warning('%s: Cloud Logging not enabled.'% project_name) 
     
-    logger.info('Checking project %s Essential Contacts service ...' % project)        
+    logger.info('Checking project %s Essential Contacts service ...' % project_name)        
     contacts = Contacts(project)
     write_csv(csv_name, project_name, contacts.list_essential_contacts(), pillar_name = '卓越运维', product_name = 'IAM', check_name = '未配置重要联系人') 
 
     if 'storage.googleapis.com' in enabled_services:
-        logger.info('Checking project %s Storage service ...' % project)         
+        logger.info('Checking project %s Storage service ...' % project_name)         
         gcs = GCS(project)
         write_csv(csv_name, project_name, gcs.list_public_buckets(), pillar_name = '安全', product_name = 'GCS', check_name = '存储桶允许公开访问')
     else:
-        logger.info('Google Cloud Storage not enabled.')    
+        logger.warning('%s: Cloud Storage not enabled.'% project_name)   
 
 
 def save_result_to_bq_looker(csv_name):
@@ -135,9 +154,9 @@ def save_result_to_bq_looker(csv_name):
     dataset = bigquery.Dataset(dataset_id)
     try:
         dataset = client.create_dataset(dataset)
-        print("Dataset {} crated.".format(dataset_id))
+        logger.debug("Dataset {} crated.".format(dataset_id))
     except:
-        print("Dataset {} already exists.".format(dataset_id))
+        logger.debug("Dataset {} already exists.".format(dataset_id))
     
     # Create a table.
     current_time = datetime.datetime.now().strftime('%m-%d-%H-%M')
@@ -163,7 +182,7 @@ def save_result_to_bq_looker(csv_name):
         job = client.load_table_from_file(source_file, table_id, job_config=job_config)
     job.result()  # Waits for the job to complete.
     table = client.get_table(table_id)
-    print(
+    logger.debug(
         "Loaded {} rows and {} columns to {}".format(
             table.num_rows, len(table.schema), table_id
         )
@@ -171,7 +190,7 @@ def save_result_to_bq_looker(csv_name):
     
     # Generate the looker studio report link
     dashbord_url= f"https://lookerstudio.google.com/reporting/create?c.reportId=159f197e-0e4a-403c-a785-5d2b571784d9&ds.ds0.connector=bigQuery&ds.ds0.type=TABLE&ds.ds0.projectId={client.project}&ds.ds0.datasetId={dataset_name}&ds.ds0.tableId={table_name}"
-    print ("click below looker report link to see result: \n" + dashbord_url)
+    logger.success("Report URL: " + dashbord_url)
 
     
 if __name__ == '__main__':
