@@ -1,5 +1,6 @@
 click==8.1.6
 loguru==0.7.0
+datetime==5.2
 google-cloud-compute==1.14.0
 google-cloud-resource-manager==1.10.3
 google-cloud-monitoring==2.15.1
@@ -9,3 +10,5 @@ google-api-python-client==2.97.0
 google-cloud-recommender==2.11.2
 google-cloud-essential-contacts==1.5.3
 google-cloud-storage==2.10.0
+google-cloud-service-management==1.6.1
+google-cloud-bigquery==3.11.4
