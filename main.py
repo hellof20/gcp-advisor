@@ -1,16 +1,17 @@
 import click
 import os,sys
 from multiprocessing import Pool
-from common import write_csv,write_csv_header,list_enabled_services
-from compute import Compute
-from monitoring import Monitor
-from resourcemanager import ResourceManager
-from redis import Redis
-from gke import GKE
-from sql import SQL
-from gcs import GCS
-from contacts import Contacts
-from cloudlogging import Logging
+from common import write_csv,write_csv_header
+from modules.services import list_enabled_services
+from modules.compute import Compute
+from modules.monitoring import Monitor
+from modules.resourcemanager import ResourceManager
+from modules.redis import Redis
+from modules.gke import GKE
+from modules.sql import SQL
+from modules.gcs import GCS
+from modules.contacts import Contacts
+from modules.cloudlogging import Logging
 from loguru import logger
 from google.cloud import bigquery
 import datetime
@@ -44,13 +45,10 @@ def main(projects):
 def func(csv_name, project):
     logger.info('Checking project %s enabled services ...' % project)
     enabled_services = list_enabled_services(project)
-    
-    if 'cloudresourcemanager.googleapis.com' in enabled_services:
-        resource = ResourceManager(project)
-        project_name = resource.get_project_name()
-    else:
-        logger.info('Google Cloud Resource Manager not enabled.')
-        project_name = project
+
+    logger.debug('%s: Get project name' % project) 
+    resource = ResourceManager(project)
+    project_name = resource.get_project_name()
 
     if 'compute.googleapis.com' in enabled_services:
         logger.info('Checking project %s Compute Engine service ...' % project)
