@@ -114,7 +114,7 @@ def func(csv_name, project):
         write_csv(csv_name, project_name, gke.check_gke_nodepool_upgrade(), pillar_name = '可靠性', product_name = 'GKE', check_name = 'GKE节点组自动升级未关闭')
         write_csv(csv_name, project_name, gke.check_gke_static_version(), pillar_name = '可靠性', product_name = 'GKE', check_name = 'GKE控制面版本不是静态版本')
         write_csv(csv_name, project_name, gke.check_gke_controller_regional(), pillar_name = '可靠性', product_name = 'GKE', check_name = 'GKE控制面不是区域级')
-        write_csv(csv_name, project_name, gke.check_gke_public_cluster(), pillar_name = '安全性', product_name = 'GKE', check_name = 'GKE集群为公开集群')       
+        write_csv(csv_name, project_name, gke.check_gke_public_cluster(), pillar_name = '安全', product_name = 'GKE', check_name = 'GKE集群为公开集群')       
     else:
         logger.warning('%s: GKE not enabled.'% project_name)
 
