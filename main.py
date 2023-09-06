@@ -189,7 +189,7 @@ def save_result_to_bq_looker(csv_name):
     )
     
     # Generate the looker studio report link
-    dashbord_url= f"https://lookerstudio.google.com/reporting/create?c.reportId=159f197e-0e4a-403c-a785-5d2b571784d9&ds.ds0.connector=bigQuery&ds.ds0.type=TABLE&ds.ds0.projectId={client.project}&ds.ds0.datasetId={dataset_name}&ds.ds0.tableId={table_name}"
+    dashbord_url= f"https://lookerstudio.google.com/reporting/create?c.reportId=6448880a-1db5-4a69-9145-72b4df88cd88&ds.ds0.connector=bigQuery&ds.ds0.type=TABLE&ds.ds0.projectId={client.project}&ds.ds0.datasetId={dataset_name}&ds.ds0.tableId={table_name}"
     logger.success("Report URL: " + dashbord_url)
 
     
