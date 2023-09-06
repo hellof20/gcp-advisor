@@ -55,7 +55,7 @@ def main(projects, **kwargs):
     try:
         save_result_to_bq_looker(csv_name)
     except Exception as e:
-        logger.warning('%s: Generate report failed.'% project_name)
+        logger.warning('Generate report failed.')
 
 
 def func(csv_name, project):

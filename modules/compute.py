@@ -195,7 +195,7 @@ class Compute(object):
                 expire_time_utc = datetime.strptime(response.expire_time,"%Y-%m-%dT%H:%M:%S.%f%z").replace(tzinfo=timezone.utc)
                 remaining_days = (expire_time_utc - current_utc).days
                 if remaining_days < 0:
-                    result.append("%s has expired" % (response.name))
+                    result.append(response.name)
         except Exception as e:
             logger.warning(e)
         finally:
@@ -237,8 +237,7 @@ class Compute(object):
             for region, response in page_result:
                 if response.forwarding_rules:
                     for forwarding_rule in response.forwarding_rules:
-                        # print("%s:%s"%(region,forwarding_rule.I_p_address))
-                        if forwarding_rule.load_balancing_scheme != 'INTERNAL':
+                        if forwarding_rule.load_balancing_scheme not in ('INTERNAL', 'INTERNAL_MANAGED'):
                             lb_ip_list.append(forwarding_rule.I_p_address)
             # check if LB external IP in VPC IP list
             for i in lb_ip_list:
@@ -284,5 +283,5 @@ class Compute(object):
         finally:
             return result   
 
-# aa = Compute('farlight-hadoop')
-# print(aa.list_ephemeral_ip_vm())
+# aa = Compute('aethergazeren')
+# print(aa.list_ephemeral_external_ip_lb())
