@@ -65,9 +65,13 @@ def func(csv_name, project):
     except Exception as e:
         logger.error(e)
 
-    logger.debug('%s: Get project name' % project) 
-    resource = ResourceManager(project)
-    project_name = resource.get_project_name()
+    try:
+        logger.debug('%s: Get project name' % project) 
+        resource = ResourceManager(project)
+        project_name = resource.get_project_name()
+    except Exception as e:
+        project_name = project
+        logger.warning(e)
 
     if 'compute.googleapis.com' in enabled_services:
         logger.info('Checking project %s Compute Engine service ...' % project_name)
