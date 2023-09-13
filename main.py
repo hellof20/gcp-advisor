@@ -12,6 +12,7 @@ from modules.sql import SQL
 from modules.gcs import GCS
 from modules.contacts import Contacts
 from modules.cloudlogging import Logging
+from modules.artifact import Registry
 from loguru import logger
 from google.cloud import bigquery
 import datetime
@@ -29,7 +30,7 @@ def main(projects, **kwargs):
     debug = kwargs['debug']
     if debug:
         logger.remove()
-        logger.add(sys.stdout, level='DEBUG', format="<level>{time} | {level} | {message}</level>")
+        logger.add(sys.stdout, level='DEBUG')
     else:
         logger.remove()
         logger.add(sys.stdout, level='INFO', format="<level>{time} | {level} | {message}</level>")
@@ -145,7 +146,16 @@ def func(csv_name, project):
         gcs = GCS(project)
         write_csv(csv_name, project_name, gcs.list_public_buckets(), pillar_name = '安全', product_name = 'GCS', check_name = '存储桶允许公开访问')
     else:
-        logger.warning('%s: Cloud Storage not enabled.'% project_name)   
+        logger.warning('%s: Cloud Storage not enabled.'% project_name)
+
+
+    if 'artifactregistry.googleapis.com' in enabled_services:
+        logger.info('Checking project %s ArtifactRegistry service ...' % project_name)  
+        registry = Registry(project)
+        write_csv(csv_name, project_name, registry.check_artifact_registry_redirection(), pillar_name = '安全', product_name = 'ArtifactRegistry', check_name = 'ContainerRegistry迁移到ArtifactRegistry')
+        write_csv(csv_name, project_name, registry.list_no_tag_docker_images(), pillar_name = '成本', product_name = 'ArtifactRegistry', check_name = '没有tag的Docker image')
+    else:
+        logger.warning('%s: ArtifactRegistry not enabled.'% project_name)
 
 
 def save_result_to_bq_looker(csv_name):

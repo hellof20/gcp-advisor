@@ -192,10 +192,11 @@ class Compute(object):
         try:
             current_utc = datetime.utcnow().replace(tzinfo=timezone.utc)
             for response in self.ssl_certificates:
-                expire_time_utc = datetime.strptime(response.expire_time,"%Y-%m-%dT%H:%M:%S.%f%z").replace(tzinfo=timezone.utc)
-                remaining_days = (expire_time_utc - current_utc).days
-                if remaining_days < 0:
-                    result.append(response.name)
+                if 'expire_time' in response:
+                    expire_time_utc = datetime.strptime(response.expire_time,"%Y-%m-%dT%H:%M:%S.%f%z").replace(tzinfo=timezone.utc)
+                    remaining_days = (expire_time_utc - current_utc).days
+                    if remaining_days < 0:
+                        result.append(response.name)
         except Exception as e:
             logger.warning(e)
         finally:
@@ -281,7 +282,4 @@ class Compute(object):
         except Exception as e:
             logger.warning(e)
         finally:
-            return result   
-
-# aa = Compute('aethergazeren')
-# print(aa.list_ephemeral_external_ip_lb())
+            return result
