@@ -88,7 +88,7 @@ def func(csv_name, project):
         write_csv(csv_name, project_name, compute.list_disabled_log_svc(), pillar_name = '卓越运维', product_name = 'LB', check_name = 'LB后端服务未启用日志')
         write_csv(csv_name, project_name, compute.recommender_idle_vm(), pillar_name = '成本', product_name = 'VM', check_name = '空闲实例')
     else:
-        logger.warning('%s: Compute Engine not enabled.'% project_name)
+        logger.info('%s: Compute Engine not enabled.'% project_name)
 
     if 'sqladmin.googleapis.com' in enabled_services:
         logger.info('Checking project %s Cloud SQL service ...' % project_name)
@@ -102,7 +102,7 @@ def func(csv_name, project):
         write_csv(csv_name, project_name, sql.check_sql_slow_query(), pillar_name = '卓越运维', product_name = 'SQL', check_name = 'SQL实例慢日志未启用')
         write_csv(csv_name, project_name, sql.recommender_idle_sql(), pillar_name = '成本', product_name = 'SQL', check_name = '空闲SQL实例')   
     else:
-        logger.warning('%s: Cloud SQL not enabled.'% project_name)
+        logger.info('%s: Cloud SQL not enabled.'% project_name)
 
     if 'redis.googleapis.com' in enabled_services:
         logger.info('Checking project %s Cloud Memorystore service ...' % project_name)
@@ -111,7 +111,7 @@ def func(csv_name, project):
         write_csv(csv_name, project_name, redis.check_redis_rdb(), pillar_name = '可靠性', product_name = 'Redis', check_name = 'Redis实例未启用RDB备份') 
         write_csv(csv_name, project_name, redis.check_redis_maintain_window(), pillar_name = '安全', product_name = 'Redis', check_name = 'Redis实例未设置维护窗口')  
     else:
-        logger.warning('%s: Redis not enabled.'% project_name)
+        logger.info('%s: Redis not enabled.'% project_name)
 
     if 'container.googleapis.com' in enabled_services:
         logger.info('Checking project %s GKE service ...' % project_name)
@@ -121,21 +121,21 @@ def func(csv_name, project):
         write_csv(csv_name, project_name, gke.check_gke_controller_regional(), pillar_name = '可靠性', product_name = 'GKE', check_name = 'GKE控制面不是区域级')
         write_csv(csv_name, project_name, gke.check_gke_public_cluster(), pillar_name = '安全', product_name = 'GKE', check_name = 'GKE集群为公开集群')       
     else:
-        logger.warning('%s: GKE not enabled.'% project_name)
+        logger.info('%s: GKE not enabled.'% project_name)
 
     if 'monitoring.googleapis.com' in enabled_services:
         logger.info('Checking project %s Monitoring service ...' % project_name)        
         monitor = Monitor(project)
         write_csv(csv_name, project_name, monitor.quota_usage(), pillar_name = '卓越运维', product_name = 'Quota', check_name = '配额高于70%')
     else:
-        logger.warning('%s: Cloud Monitoring not enabled.'% project_name)   
+        logger.info('%s: Cloud Monitoring not enabled.'% project_name)   
 
     if 'logging.googleapis.com' in enabled_services:
         logger.info('Checking project %s Logging service ...' % project_name)        
         log = Logging(project)
         write_csv(csv_name, project_name, log.check_if_analytics_enabled(), pillar_name = '卓越运维', product_name = 'Logging', check_name = '未启用日志分析功能')    
     else:
-        logger.warning('%s: Cloud Logging not enabled.'% project_name) 
+        logger.info('%s: Cloud Logging not enabled.'% project_name) 
     
     logger.info('Checking project %s Essential Contacts service ...' % project_name)        
     contacts = Contacts(project)
@@ -146,7 +146,7 @@ def func(csv_name, project):
         gcs = GCS(project)
         write_csv(csv_name, project_name, gcs.list_public_buckets(), pillar_name = '安全', product_name = 'GCS', check_name = '存储桶允许公开访问')
     else:
-        logger.warning('%s: Cloud Storage not enabled.'% project_name)
+        logger.info('%s: Cloud Storage not enabled.'% project_name)
 
 
     if 'artifactregistry.googleapis.com' in enabled_services:
@@ -155,7 +155,7 @@ def func(csv_name, project):
         write_csv(csv_name, project_name, registry.check_artifact_registry_redirection(), pillar_name = '安全', product_name = 'ArtifactRegistry', check_name = 'ContainerRegistry迁移到ArtifactRegistry')
         write_csv(csv_name, project_name, registry.list_no_tag_docker_images(), pillar_name = '成本', product_name = 'ArtifactRegistry', check_name = '没有tag的Docker image')
     else:
-        logger.warning('%s: ArtifactRegistry not enabled.'% project_name)
+        logger.info('%s: ArtifactRegistry not enabled.'% project_name)
 
 
 def save_result_to_bq_looker(csv_name):

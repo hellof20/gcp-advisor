@@ -7,6 +7,7 @@ class GKE(object):
         self.client = container_v1.ClusterManagerClient()
         self.result = self.list_clusters()
 
+
     def list_clusters(self):
         logger.debug('%s: list_clusters' % self.project)        
         result = []
@@ -17,6 +18,7 @@ class GKE(object):
             logger.warning(e)
         finally:
             return result           
+
 
     def check_gke_controller_regional(self):
         logger.debug('%s: check_gke_controller_regional' % self.project)        
@@ -29,27 +31,31 @@ class GKE(object):
             logger.warning(e)
         finally:
             return result      
-        
+
+
     def check_gke_static_version(self):
         logger.debug('%s: check_gke_static_version' % self.project)        
         result = []
         try:        
             for cluster in self.result.clusters:
-                if cluster.release_channel.channel.name != 'UNSPECIFIED':
-                    result.append(cluster.name)
+                if cluster.autopilot.enabled == False:
+                    if cluster.release_channel.channel.name != 'UNSPECIFIED':
+                        result.append(cluster.name)
         except Exception as e:
             logger.warning(e)
         finally:
             return result 
+
 
     def check_gke_nodepool_upgrade(self):
         logger.debug('%s: check_gke_nodepool_upgrade' % self.project)        
         result = []
         try:        
             for cluster in self.result.clusters:
-                for pool in cluster.node_pools:
-                    if pool.management.auto_upgrade == True:
-                        result.append(cluster.name + ':' + pool.name)      
+                if cluster.autopilot.enabled == False:
+                    for pool in cluster.node_pools:
+                        if pool.management.auto_upgrade == True:
+                            result.append(cluster.name + ':' + pool.name)      
         except Exception as e:
             logger.warning(e)
         finally:
@@ -68,6 +74,3 @@ class GKE(object):
             logger.warning(e)
         finally:
             return result
-
-# gke = GKE('speedy-victory-336109')
-# print(gke.check_gke_public_cluster())
