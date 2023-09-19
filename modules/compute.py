@@ -277,9 +277,29 @@ class Compute(object):
                 request = recommender_v1.ListRecommendationsRequest(parent=parent)
                 page_result = self.recommender_client.list_recommendations(request=request)
                 for response in page_result:
-                    vm_name = response.content.overview['resource'].split('/')[-1]
+                    print(response)
+                    vm_name = response.content.overview['resource']
                     result.append(vm_name)
         except Exception as e:
             logger.warning(e)
         finally:
             return result
+
+
+    def recommender_idle_image(self):
+        logger.debug('%s: recommender_idle_image' % self.project)          
+        result = []
+        try:
+            parent = 'projects/%s/locations/global/recommenders/%s' %(self.project, 'google.compute.image.IdleResourceRecommender')
+            request = recommender_v1.ListRecommendationsRequest(parent=parent)
+            page_result = self.recommender_client.list_recommendations(request=request)
+            for response in page_result:
+                result.append(response.content.overview['resource'].split('/')[-1])
+        except Exception as e:
+            logger.warning(e)
+        finally:
+            return result
+            
+
+# aa = Compute('aethergazeren')
+# print(aa.recommender_idle_image())

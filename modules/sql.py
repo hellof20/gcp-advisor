@@ -152,9 +152,7 @@ class SQL(object):
         except Exception as e:
             logger.warning(e)
         finally:
-            return result                     
+            return result
 
-# aa = SQL('farlight-hadoop')   
-# print(aa.check_sql_slow_query())
-# for instance in instances:
-#     print(instance['region'])
+# aa = SQL('pangu-358004')
+# print(aa.recommender_sql_over_provisioned())
