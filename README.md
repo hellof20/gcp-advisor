@@ -11,9 +11,9 @@ pip install -r requirements.txt
 ```
 
 ## Try it out
-1. gcp advisor --help
+1. gcp advisor parameters
 ```
-./bin/gcp-advisor --help         
+./bin/gcp-advisor --help
 Usage: main.py [OPTIONS]
 
 Options:
@@ -22,15 +22,12 @@ Options:
   --debug              Optional: set log level to debug
   -h, --help           Show this message and exit.
 ```
-3. Run gcp advisor
 
-make sure you have permission to do this
+2. Run gcp advisor
 ```
 chmod +x bin/gcp-advisor
-./bin/gcp-advisor --projects project_1_id,project_2_id
+./bin/gcp-advisor -p project_1_id,project_2_id -x
 ```
-2. check result
-```
-cat check_result.csv
-```
-<img width="702" alt="image" src="https://github.com/hellof20/gcp-advisor/assets/8756642/cdd1a397-3cac-4498-bb18-d1f546771bf7">
+
+3. Click Report URL
+![image](https://github.com/hellof20/gcp-advisor/assets/8756642/4d38de3c-a9d7-4118-9ef0-6713d2a26369)
