@@ -11,7 +11,18 @@ pip install -r requirements.txt
 ```
 
 ## Try it out
-1. Run gcp advisor
+1. gcp advisor --help
+```
+./bin/gcp-advisor --help         
+Usage: main.py [OPTIONS]
+
+Options:
+  -p, --projects TEXT  Required: one or more project id separated by commas
+  -x, --parallel       Optional: check multiple projects in parallel
+  --debug              Optional: set log level to debug
+  -h, --help           Show this message and exit.
+```
+3. Run gcp advisor
 
 make sure you have permission to do this
 ```
