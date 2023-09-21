@@ -1,5 +1,5 @@
 import click
-import os,sys
+import os,sys,requests
 from multiprocessing import Pool
 from common import write_csv,write_csv_header
 from modules.services import list_enabled_services
@@ -126,6 +126,17 @@ def func(csv_name, project):
     if 'monitoring.googleapis.com' in enabled_services:
         logger.info('Checking project %s Monitoring service ...' % project_name)        
         monitor = Monitor(project)
+        # 
+        enabled_ops_agend_vm_ids = monitor.ops_agent_installed()
+        all_vm_ids = []
+        not_enabled_ops_agend_vm_ids = []
+        for instance in compute.all_instances:
+            if instance.name[0:4] != 'gke-':
+                all_vm_ids.append(str(instance.id))
+        for i in all_vm_ids:
+            if i not in enabled_ops_agend_vm_ids:
+                not_enabled_ops_agend_vm_ids.append(i)
+        write_csv(csv_name, project_name, not_enabled_ops_agend_vm_ids, pillar_name = '卓越运维', product_name = 'Ops Agent', check_name = '未启用Ops Agent的实例ID')
         write_csv(csv_name, project_name, monitor.quota_usage(), pillar_name = '卓越运维', product_name = 'Quota', check_name = '配额高于70%')
     else:
         logger.info('%s: Cloud Monitoring not enabled.'% project_name)   

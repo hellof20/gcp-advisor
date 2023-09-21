@@ -37,5 +37,31 @@ class Monitor(object):
         finally:
             return result
 
+
+    def ops_agent_installed(self):
+        logger.debug('%s: ops_agent_installed' % self.project)
+        result = []
+        try:
+            query = '''
+            fetch gce_instance
+            | metric 'agent.googleapis.com/agent/api_request_count'
+            | align rate(10m)
+            | every 10m
+            | group_by [resource.instance_id],
+                [value_api_request_count_aggregate: aggregate(value.api_request_count)]
+            '''
+            request = monitoring_v3.QueryTimeSeriesRequest(
+                name="projects/%s" % self.project,
+                query=query,
+            )
+            page_result = self.monitor.query_time_series(request=request)
+            for response in page_result:
+                instance_id = response.label_values[0].string_value
+                result.append(instance_id)
+        except Exception as e:
+            logger.warning(e)
+        finally:
+            return result
+
 # aa = Monitor('speedy-victory-336109')
-# print(aa.quota_usage())
+# print(aa.ops_agent_installed())

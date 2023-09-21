@@ -301,5 +301,6 @@ class Compute(object):
             return result
             
 
-# aa = Compute('aethergazeren')
-# print(aa.recommender_idle_image())
+# aa = Compute('speedy-victory-336109')
+# for vm in aa.all_instances:
+#     print(vm.id)
